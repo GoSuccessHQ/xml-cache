@@ -25,14 +25,6 @@ final class XML_Sitemap_Repository {
 	private const TRANSIENT_KEY = 'xml_cache_sitemap';
 
 	/**
-	 * Transient expiration in seconds.
-	 *
-	 * Set to 0 (no expiration) because the cache is explicitly invalidated
-	 * on every content change via save_post, delete_post, and term hooks.
-	 */
-	private const TRANSIENT_EXPIRATION = 0;
-
-	/**
 	 * Collected sitemap URL entries.
 	 *
 	 * Each entry is an array with keys 'loc' (string) and optionally 'lastmod' (string, W3C date).
@@ -521,7 +513,7 @@ final class XML_Sitemap_Repository {
 			$sitemap = new self();
 			$sitemap->collect_urls();
 			$cached = $sitemap->sitemap_urls;
-			set_transient( self::TRANSIENT_KEY, $cached, self::TRANSIENT_EXPIRATION );
+			set_transient( self::TRANSIENT_KEY, $cached );
 		}
 
 		$total = count( $cached );
