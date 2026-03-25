@@ -187,9 +187,9 @@ export default function Settings() {
 
                     <ToggleControl
                         __nextHasNoMarginBottom
-                        label={ __( 'Include archives', 'xml-cache' ) }
-                        checked={ options.archives_enabled }
-                        onChange={ ( state ) => onChangeSetting( 'archives_enabled', state ) }
+                        label={ __( 'Include custom taxonomies', 'xml-cache' ) }
+                        checked={ options.custom_taxonomies_enabled ?? true }
+                        onChange={ ( state ) => onChangeSetting( 'custom_taxonomies_enabled', state ) }
                         disabled={ options === false || sitemapUrl === false }
                     />
 
@@ -198,6 +198,38 @@ export default function Settings() {
                         label={ __( 'Include tags', 'xml-cache' ) }
                         checked={ options.tags_enabled }
                         onChange={ ( state ) => onChangeSetting( 'tags_enabled', state ) }
+                        disabled={ options === false || sitemapUrl === false }
+                    />
+
+                    <ToggleControl
+                        __nextHasNoMarginBottom
+                        label={ __( 'Include author archives', 'xml-cache' ) }
+                        checked={ options.authors_enabled ?? true }
+                        onChange={ ( state ) => onChangeSetting( 'authors_enabled', state ) }
+                        disabled={ options === false || sitemapUrl === false }
+                    />
+
+                    <ToggleControl
+                        __nextHasNoMarginBottom
+                        label={ __( 'Include post type archives', 'xml-cache' ) }
+                        checked={ options.post_type_archives_enabled ?? true }
+                        onChange={ ( state ) => onChangeSetting( 'post_type_archives_enabled', state ) }
+                        disabled={ options === false || sitemapUrl === false }
+                    />
+
+                    <ToggleControl
+                        __nextHasNoMarginBottom
+                        label={ __( 'Include date archives', 'xml-cache' ) }
+                        checked={ options.date_archives_enabled ?? true }
+                        onChange={ ( state ) => onChangeSetting( 'date_archives_enabled', state ) }
+                        disabled={ options === false || sitemapUrl === false }
+                    />
+
+                    <ToggleControl
+                        __nextHasNoMarginBottom
+                        label={ __( 'Include homepage', 'xml-cache' ) }
+                        checked={ options.homepage_enabled ?? true }
+                        onChange={ ( state ) => onChangeSetting( 'homepage_enabled', state ) }
                         disabled={ options === false || sitemapUrl === false }
                     />
                 </CardBody>

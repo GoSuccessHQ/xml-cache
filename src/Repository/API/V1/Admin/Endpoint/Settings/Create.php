@@ -38,27 +38,47 @@ final class Create extends API_Endpoint_Base {
 				'callback'            => array( $this, 'callback' ),
 				'permission_callback' => array( $this, 'permission_callback' ),
 				'args'                => array(
-					'posts_enabled'             => array(
+					'posts_enabled'              => array(
 						'type'              => 'boolean',
 						'required'          => true,
 						'sanitize_callback' => 'rest_sanitize_boolean',
 					),
-					'custom_post_types_enabled' => array(
+					'custom_post_types_enabled'  => array(
 						'type'              => 'boolean',
 						'required'          => true,
 						'sanitize_callback' => 'rest_sanitize_boolean',
 					),
-					'categories_enabled'        => array(
+					'categories_enabled'         => array(
 						'type'              => 'boolean',
 						'required'          => true,
 						'sanitize_callback' => 'rest_sanitize_boolean',
 					),
-					'archives_enabled'          => array(
+					'custom_taxonomies_enabled'  => array(
 						'type'              => 'boolean',
 						'required'          => true,
 						'sanitize_callback' => 'rest_sanitize_boolean',
 					),
-					'tags_enabled'              => array(
+					'tags_enabled'               => array(
+						'type'              => 'boolean',
+						'required'          => true,
+						'sanitize_callback' => 'rest_sanitize_boolean',
+					),
+					'authors_enabled'            => array(
+						'type'              => 'boolean',
+						'required'          => true,
+						'sanitize_callback' => 'rest_sanitize_boolean',
+					),
+					'post_type_archives_enabled' => array(
+						'type'              => 'boolean',
+						'required'          => true,
+						'sanitize_callback' => 'rest_sanitize_boolean',
+					),
+					'date_archives_enabled'      => array(
+						'type'              => 'boolean',
+						'required'          => true,
+						'sanitize_callback' => 'rest_sanitize_boolean',
+					),
+					'homepage_enabled'           => array(
 						'type'              => 'boolean',
 						'required'          => true,
 						'sanitize_callback' => 'rest_sanitize_boolean',
@@ -79,11 +99,15 @@ final class Create extends API_Endpoint_Base {
 
 		try {
 			$options = array(
-				'posts_enabled'             => $request->get_param( 'posts_enabled' ),
-				'custom_post_types_enabled' => $request->get_param( 'custom_post_types_enabled' ),
-				'categories_enabled'        => $request->get_param( 'categories_enabled' ),
-				'archives_enabled'          => $request->get_param( 'archives_enabled' ),
-				'tags_enabled'              => $request->get_param( 'tags_enabled' ),
+				'posts_enabled'              => $request->get_param( 'posts_enabled' ),
+				'custom_post_types_enabled'  => $request->get_param( 'custom_post_types_enabled' ),
+				'categories_enabled'         => $request->get_param( 'categories_enabled' ),
+				'custom_taxonomies_enabled'  => $request->get_param( 'custom_taxonomies_enabled' ),
+				'tags_enabled'               => $request->get_param( 'tags_enabled' ),
+				'authors_enabled'            => $request->get_param( 'authors_enabled' ),
+				'post_type_archives_enabled' => $request->get_param( 'post_type_archives_enabled' ),
+				'date_archives_enabled'      => $request->get_param( 'date_archives_enabled' ),
+				'homepage_enabled'           => $request->get_param( 'homepage_enabled' ),
 			);
 			update_option( 'xml_cache_settings', $options );
 

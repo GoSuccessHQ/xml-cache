@@ -39,11 +39,15 @@ final class Activation_Repository {
 	 */
 	public static function get_default_settings(): array {
 		return array(
-			'posts_enabled'             => true,
-			'custom_post_types_enabled' => true,
-			'categories_enabled'        => true,
-			'archives_enabled'          => true,
-			'tags_enabled'              => true,
+			'posts_enabled'              => true,
+			'custom_post_types_enabled'  => true,
+			'categories_enabled'         => true,
+			'custom_taxonomies_enabled'  => true,
+			'tags_enabled'               => true,
+			'authors_enabled'            => true,
+			'post_type_archives_enabled' => true,
+			'date_archives_enabled'      => true,
+			'homepage_enabled'           => true,
 		);
 	}
 }

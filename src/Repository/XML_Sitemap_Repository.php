@@ -40,14 +40,20 @@ final class XML_Sitemap_Repository {
 			$option = $option[0];
 		}
 
+		// Migrate renamed key from v1.x.
+		if ( isset( $option['archives_enabled'] ) && ! isset( $option['date_archives_enabled'] ) ) {
+			$option['date_archives_enabled'] = $option['archives_enabled'];
+			unset( $option['archives_enabled'] );
+		}
+
+		// Fill missing keys with defaults for existing installations.
+		$option = array_merge( Activation_Repository::get_default_settings(), $option );
+
 		if ( ! empty( $option['posts_enabled'] ) ) {
-			// Only core posts/pages; CPTs are handled via separate toggle below.
 			$this->get_post_urls();
 		}
 
-		// Custom Post Types: default to enabled if not explicitly set (backwards compatibility).
-		$cpt_enabled = isset( $option['custom_post_types_enabled'] ) ? ! empty( $option['custom_post_types_enabled'] ) : true;
-		if ( $cpt_enabled ) {
+		if ( ! empty( $option['custom_post_types_enabled'] ) ) {
 			$this->get_custom_post_type_urls();
 		}
 
@@ -55,12 +61,28 @@ final class XML_Sitemap_Repository {
 			$this->get_category_urls();
 		}
 
-		if ( ! empty( $option['archives_enabled'] ) ) {
-			$this->get_archive_urls();
+		if ( ! empty( $option['custom_taxonomies_enabled'] ) ) {
+			$this->get_custom_taxonomy_urls();
 		}
 
 		if ( ! empty( $option['tags_enabled'] ) ) {
 			$this->get_tag_urls();
+		}
+
+		if ( ! empty( $option['authors_enabled'] ) ) {
+			$this->get_author_urls();
+		}
+
+		if ( ! empty( $option['post_type_archives_enabled'] ) ) {
+			$this->get_post_type_archive_urls();
+		}
+
+		if ( ! empty( $option['date_archives_enabled'] ) ) {
+			$this->get_date_archive_urls();
+		}
+
+		if ( ! empty( $option['homepage_enabled'] ) ) {
+			$this->get_homepage_url();
 		}
 	}
 
@@ -142,23 +164,164 @@ final class XML_Sitemap_Repository {
 	}
 
 	/**
-	 * Collect archive URLs.
+	 * Collect date-based archive URLs (yearly, monthly, daily).
 	 */
-	private function get_archive_urls(): void {
+	private function get_date_archive_urls(): void {
 		global $wpdb;
 
-		$months = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-			"SELECT DISTINCT YEAR(post_date) AS `year`, MONTH(post_date) AS `month`
+		$dates = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+			"SELECT DISTINCT YEAR(post_date) AS `year`, MONTH(post_date) AS `month`, DAY(post_date) AS `day`
 			FROM {$wpdb->posts}
 			WHERE post_type = 'post' AND post_status = 'publish'
 			ORDER BY post_date ASC"
 		);
 
-		if ( ! empty( $months ) ) {
-			foreach ( $months as $row ) {
-				$this->sitemap_urls[] = get_month_link( (int) $row->year, (int) $row->month );
+		if ( empty( $dates ) ) {
+			return;
+		}
+
+		$years  = array();
+		$months = array();
+
+		foreach ( $dates as $row ) {
+			$year  = (int) $row->year;
+			$month = (int) $row->month;
+			$day   = (int) $row->day;
+
+			// Yearly archive (deduplicated).
+			if ( ! isset( $years[ $year ] ) ) {
+				$years[ $year ] = true;
+				$this->sitemap_urls[] = get_year_link( $year );
+			}
+
+			// Monthly archive (deduplicated).
+			$month_key = $year . '-' . $month;
+			if ( ! isset( $months[ $month_key ] ) ) {
+				$months[ $month_key ] = true;
+				$this->sitemap_urls[] = get_month_link( $year, $month );
+			}
+
+			// Daily archive.
+			$this->sitemap_urls[] = get_day_link( $year, $month, $day );
+		}
+	}
+
+	/**
+	 * Collect author archive URLs with pagination.
+	 */
+	private function get_author_urls(): void {
+		$authors = get_users(
+			array(
+				'has_published_posts' => true,
+				'fields'             => array( 'ID' ),
+			)
+		);
+
+		if ( empty( $authors ) ) {
+			return;
+		}
+
+		$permalinks_enabled = ! empty( get_option( 'permalink_structure' ) );
+		$posts_per_page     = absint( get_option( 'posts_per_page' ) );
+
+		foreach ( $authors as $author ) {
+			$author_id = (int) $author->ID;
+			$permalink = get_author_posts_url( $author_id );
+
+			if ( empty( $permalink ) ) {
+				continue;
+			}
+
+			$this->sitemap_urls[] = $permalink;
+
+			// Pagination for author archives.
+			$total_posts = (int) count_user_posts( $author_id, '', true );
+			$numpage     = (int) ceil( $total_posts / max( 1, $posts_per_page ) );
+
+			while ( $numpage > 1 ) {
+				$this->sitemap_urls[] = $this->build_paginated_url( $permalink, $permalinks_enabled, $numpage, 'archive' );
+				--$numpage;
 			}
 		}
+	}
+
+	/**
+	 * Collect URLs for custom (non-builtin) taxonomy term archives with pagination.
+	 */
+	private function get_custom_taxonomy_urls(): void {
+		$taxonomies = get_taxonomies(
+			array(
+				'public'   => true,
+				'_builtin' => false,
+			),
+			'names'
+		);
+
+		if ( empty( $taxonomies ) ) {
+			return;
+		}
+
+		foreach ( $taxonomies as $taxonomy ) {
+			$term_ids = get_terms(
+				array(
+					'taxonomy'   => $taxonomy,
+					'fields'     => 'ids',
+					'hide_empty' => true,
+				)
+			);
+
+			if ( empty( $term_ids ) || is_wp_error( $term_ids ) ) {
+				continue;
+			}
+
+			$this->get_urls( 'get_term_link', $term_ids );
+		}
+	}
+
+	/**
+	 * Collect post type archive URLs with pagination.
+	 */
+	private function get_post_type_archive_urls(): void {
+		$post_types = get_post_types(
+			array(
+				'public'      => true,
+				'has_archive' => true,
+			),
+			'objects'
+		);
+
+		if ( empty( $post_types ) ) {
+			return;
+		}
+
+		$permalinks_enabled = ! empty( get_option( 'permalink_structure' ) );
+		$posts_per_page     = absint( get_option( 'posts_per_page' ) );
+
+		foreach ( $post_types as $post_type ) {
+			$permalink = get_post_type_archive_link( $post_type->name );
+
+			if ( empty( $permalink ) ) {
+				continue;
+			}
+
+			$this->sitemap_urls[] = $permalink;
+
+			// Pagination for post type archives.
+			$total_posts = (int) wp_count_posts( $post_type->name )->publish;
+			$numpage     = (int) ceil( $total_posts / max( 1, $posts_per_page ) );
+
+			while ( $numpage > 1 ) {
+				$this->sitemap_urls[] = $this->build_paginated_url( $permalink, $permalinks_enabled, $numpage, 'archive' );
+				--$numpage;
+			}
+		}
+	}
+
+	/**
+	 * Collect the homepage URL when configured as "latest posts".
+	 */
+	private function get_homepage_url(): void {
+		$this->sitemap_urls[] = home_url( '/' );
 	}
 
 	/**
@@ -182,48 +345,55 @@ final class XML_Sitemap_Repository {
 		$page_for_posts     = absint( get_option( 'page_for_posts' ) );
 		$posts_per_page     = absint( get_option( 'posts_per_page' ) );
 
-		foreach ( $url_ids as $id ) {
-			$is_post_cache_enabled = Meta_Box_Repository::is_post_cache_enabled( $id );
+		$is_post_callable = 'get_permalink' === $permalink_callable;
 
-			if ( ! $is_post_cache_enabled ) {
-				continue;
+		foreach ( $url_ids as $id ) {
+			// Only check per-post opt-out for post permalinks, not for term links.
+			if ( $is_post_callable ) {
+				$is_post_cache_enabled = Meta_Box_Repository::is_post_cache_enabled( $id );
+
+				if ( ! $is_post_cache_enabled ) {
+					continue;
+				}
 			}
 
 			$permalink = $permalink_callable( $id );
 
-			if ( ! empty( $permalink ) ) {
-				$this->sitemap_urls[] = $permalink;
+			if ( empty( $permalink ) || is_wp_error( $permalink ) ) {
+				continue;
+			}
 
-				$numpage = 1;
-				$context = 'archive';
+			$this->sitemap_urls[] = $permalink;
 
-				if ( 'get_permalink' === $permalink_callable ) { // Singular or posts page.
-					if ( $page_for_posts === $id ) {
-						// Posts page behaves like an archive for pagination.
-						$total_posts = (int) wp_count_posts( 'post' )->publish;
-						$numpage     = (int) ceil( $total_posts / max( 1, $posts_per_page ) );
-						$context     = 'archive';
-					} else {
-						// Multipage singular content.
-						$postdata = generate_postdata( $id );
-						if ( false !== $postdata && 1 === $postdata['multipage'] ) {
-							$numpage = (int) $postdata['numpages'];
-						}
-						$context = 'singular';
-					}
+			$numpage = 1;
+			$context = 'archive';
+
+			if ( $is_post_callable ) { // Singular or posts page.
+				if ( $page_for_posts === $id ) {
+					// Posts page behaves like an archive for pagination.
+					$total_posts = (int) wp_count_posts( 'post' )->publish;
+					$numpage     = (int) ceil( $total_posts / max( 1, $posts_per_page ) );
+					$context     = 'archive';
 				} else {
-					// Category or tag archives — use term count instead of fetching all posts.
-					$term = get_term( $id );
-					if ( $term && ! is_wp_error( $term ) ) {
-						$numpage = (int) ceil( (int) $term->count / max( 1, $posts_per_page ) );
+					// Multipage singular content.
+					$postdata = generate_postdata( $id );
+					if ( false !== $postdata && 1 === $postdata['multipage'] ) {
+						$numpage = (int) $postdata['numpages'];
 					}
-					$context = 'archive';
+					$context = 'singular';
 				}
+			} else {
+				// Category, tag, or custom taxonomy archives — use term count.
+				$term = get_term( $id );
+				if ( $term && ! is_wp_error( $term ) ) {
+					$numpage = (int) ceil( (int) $term->count / max( 1, $posts_per_page ) );
+				}
+				$context = 'archive';
+			}
 
-				while ( $numpage > 1 ) {
-					$this->sitemap_urls[] = $this->build_paginated_url( (string) $permalink, (bool) $permalinks_enabled, (int) $numpage, (string) $context );
-					--$numpage;
-				}
+			while ( $numpage > 1 ) {
+				$this->sitemap_urls[] = $this->build_paginated_url( (string) $permalink, (bool) $permalinks_enabled, (int) $numpage, (string) $context );
+				--$numpage;
 			}
 		}
 	}

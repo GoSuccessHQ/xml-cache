@@ -60,6 +60,15 @@ final class Read extends API_Endpoint_Base {
 				$options = $options[0];
 			}
 
+			// Migrate renamed key from v1.x.
+			if ( isset( $options['archives_enabled'] ) && ! isset( $options['date_archives_enabled'] ) ) {
+				$options['date_archives_enabled'] = $options['archives_enabled'];
+				unset( $options['archives_enabled'] );
+			}
+
+			// Fill missing keys with defaults for existing installations.
+			$options = array_merge( Activation_Repository::get_default_settings(), $options );
+
 			$api_response->set_success( true );
 			$api_response->set_data( $options );
 		} catch ( Exception $e ) {
