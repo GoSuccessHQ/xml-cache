@@ -22,7 +22,7 @@ final class Site_Health_Repository {
 	 */
 	public function add_debug_information( array $info ): array {
 		$settings  = XML_Sitemap_Repository::resolve_settings();
-		$transient = get_transient( XML_Sitemap_Repository::TRANSIENT_KEY );
+		$transient = get_transient( 'xml_cache_sitemap' );
 		$is_cached = false !== $transient && is_array( $transient );
 		$url_count = $is_cached ? count( $transient ) : 0;
 

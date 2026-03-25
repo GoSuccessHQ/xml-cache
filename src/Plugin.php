@@ -113,7 +113,7 @@ final class Plugin {
 	 * Register WP-CLI commands when running in CLI context.
 	 */
 	private function register_cli_commands(): void {
-		if ( defined( 'WP_CLI' ) && WP_CLI ) {
+		if ( defined( 'WP_CLI' ) && \WP_CLI ) {
 			\WP_CLI::add_command( 'xml-cache', CLI_Command::class );
 		}
 	}

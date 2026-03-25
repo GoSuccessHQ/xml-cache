@@ -12,7 +12,6 @@ namespace GoSuccess\XML_Cache\Repository\API\V1\Admin\Endpoint\Cache;
 use GoSuccess\XML_Cache\Base\API_Endpoint_Base;
 use GoSuccess\XML_Cache\Model\API_Response;
 use GoSuccess\XML_Cache\Repository\API\V1\Admin\API_Repository;
-use GoSuccess\XML_Cache\Repository\XML_Sitemap_Repository;
 use WP_REST_Request;
 use WP_REST_Response;
 use WP_REST_Server;
