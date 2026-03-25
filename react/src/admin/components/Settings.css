@@ -5,23 +5,36 @@
 }
 
 .xml-cache__stats {
+	display: inline-block;
 	font-size: 13px;
 	font-weight: 600;
 	margin-top: 0.5rem;
+	padding: 4px 12px;
+	border-radius: 9999px;
+	border: 1px solid;
 }
 
 .xml-cache__stats--active {
 	color: var(--xml-cache-color-active);
+	background: color-mix(in srgb, var(--xml-cache-color-active) 8%, transparent);
+	border-color: color-mix(in srgb, var(--xml-cache-color-active) 30%, transparent);
 }
 
 .xml-cache__stats--empty {
 	color: var(--xml-cache-color-empty);
+	background: color-mix(in srgb, var(--xml-cache-color-empty) 10%, transparent);
+	border-color: color-mix(in srgb, var(--xml-cache-color-empty) 30%, transparent);
 }
 
 .xml-cache__buttons {
 	display: grid;
 	grid-template-columns: repeat(2, 1fr);
 	gap: 1rem;
+}
+
+.xml-cache__buttons .components-button {
+	border-radius: 9999px;
+	justify-content: center;
 }
 
 .xml-cache__toggles {
