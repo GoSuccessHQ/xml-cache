@@ -1,8 +1,8 @@
 import apiFetch from '@wordpress/api-fetch';
 import { Spinner, Notice, Button, Card, CardHeader, CardBody, CardDivider, CardFooter, ToggleControl } from '@wordpress/components';
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import { useCopyToClipboard } from '@wordpress/compose';
-import { useState, useEffect, createInterpolateElement } from '@wordpress/element';
+import { useState, useEffect, useCallback, createInterpolateElement } from '@wordpress/element';
 import { dispatch } from '@wordpress/data';
 import Notices from './Notices';
 import './Settings.css';
@@ -11,6 +11,17 @@ export default function Settings() {
     const [ options, setOptions ] = useState( null );
     const [ sitemapUrl, setSitemapUrl ] = useState( null );
     const [ error, setError ] = useState( null );
+    const [ cacheStats, setCacheStats ] = useState( null );
+
+    const fetchCacheStats = useCallback( () => {
+        apiFetch( {
+            path: xmlCache.restApiNamespace + '/cache'
+        } ).then( ( result ) => {
+            if ( result.success ) {
+                setCacheStats( result.data );
+            }
+        } ).catch( () => {} );
+    }, [] );
 
     const copyRef = useCopyToClipboard(
         () => sitemapUrl ?? '',
@@ -64,6 +75,7 @@ export default function Settings() {
                     __( 'Sitemap cache cleared.', 'xml-cache' ),
                     { type: 'snackbar', isDismissible: true }
                 );
+                setCacheStats( { url_count: 0, is_cached: false } );
             }
         } ).catch( ( error ) => {
             console.error( error );
@@ -106,6 +118,8 @@ export default function Settings() {
             setSitemapUrl( false );
             setError( error.message );
         } );
+
+        fetchCacheStats();
     }, []);
 
     if ( options === null || sitemapUrl === null ) {
@@ -137,6 +151,14 @@ export default function Settings() {
 
                 <CardBody>
                     <p>{ __( 'XML Cache generates an XML sitemap for cache plugins. Select which sections you want to include in the sitemap. URLs that are set to noindex are also included in the sitemap. You can specify the sitemap in your cache plugin\'s settings to automatically warm up your entire cache.', 'xml-cache' ) }</p>
+                    { cacheStats && (
+                        <p className="xml-cache__stats">
+                            { cacheStats.is_cached
+                                ? sprintf( __( '%s URLs in sitemap (cached)', 'xml-cache' ), cacheStats.url_count.toLocaleString() )
+                                : __( 'Sitemap cache is empty. It will be generated on the next request.', 'xml-cache' )
+                            }
+                        </p>
+                    ) }
                 </CardBody>
                 
                 <CardDivider />
