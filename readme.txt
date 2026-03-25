@@ -48,6 +48,23 @@ To install with the zip file downloaded from this page:
 
 == Changelog ==
 
+= 2.1.0 =
+* Multilingual support for Polylang, WPML, and TranslatePress.
+* Admin bar integration with live URL count and quick actions.
+* WP-CLI commands: status and flush.
+* Site Health debug info section.
+* Auto-regeneration on cache invalidation.
+* Cache statistics on the admin settings page.
+* 5 new URL types: categories, tags, archives, custom post types, and attachments.
+* Per-request throttling to prevent redundant cache invalidations.
+* Responsive admin UI with container queries and pill-style stats badge.
+* Removed Symfony DI for a lighter footprint.
+* Updated all dependencies to latest versions.
+* Added direct file access protection to all PHP files.
+* Simplified GitHub workflows using 10up deploy actions.
+* Bumped minimum WordPress version to 6.4.
+* Tested up to WordPress 7.0.
+
 = 1.2.1 =
 * Fixed "Undefined variable $numpage".
 
