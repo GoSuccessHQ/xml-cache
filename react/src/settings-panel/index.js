@@ -6,8 +6,9 @@ import { useSelect, useDispatch } from '@wordpress/data';
 
 const XMLCacheSettings = () => {
     const { metaValue } = useSelect( ( select ) => {
+		const meta = select( 'core/editor' ).getEditedPostAttribute( 'meta' );
 		return {
-			metaValue: select( 'core/editor' ).getEditedPostAttribute( 'meta' )['_xml_cache_enabled'],
+			metaValue: meta ? meta['_xml_cache_enabled'] : true,
 		}
 	}, ['_xml_cache_enabled'] );
 
