@@ -9,6 +9,7 @@ declare( strict_types=1 );
 
 namespace GoSuccess\XML_Cache\Repository\API\V1\Admin\Endpoint\Cache;
 
+use GoSuccess\XML_Cache\Repository\API\V1\Admin\Endpoint\Cache\Create;
 use GoSuccess\XML_Cache\Repository\API\V1\Admin\Endpoint\Cache\Delete;
 use GoSuccess\XML_Cache\Repository\API\V1\Admin\Endpoint\Cache\Read;
 
@@ -28,6 +29,7 @@ final class Cache_Repository {
 	 * Constructor to initialize the cache endpoint.
 	 */
 	public function __construct() {
+		new Create();
 		new Read();
 		new Delete();
 	}

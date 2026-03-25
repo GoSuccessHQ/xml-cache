@@ -139,7 +139,7 @@ final class Plugin {
 			$is_cached = false !== $cached && is_array( $cached );
 			$url_count = $is_cached ? count( $cached ) : 0;
 
-			$icon  = '<img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjY0IDI2IDM4NCAzODQiPjxwYXRoIGQ9Ik0zMjQuNjQgNzguMDQ0YzYyLjI0OCAyNy44MTcgMTAyLjUxNiA4OS45MTYgMTAyLjUxNiAxNTguMDk3IDAgOTQuOTU5LTc4LjEwOCAxNzMuMTExLTE3My4wNjYgMTczLjE2NWgtLjAxM2MtOTQuOTcyIDAtMTczLjEyMi03OC4xNTEtMTczLjEyMi0xNzMuMTIzIDAtNDQuNTcyIDE3LjIxMy04Ny40NjcgNDguMDI1LTExOS42NzQgMTYuMTQ1IDIyLjU2NyAzNy40NTkgNDAuOTQ1IDYyLjE1NiA1My41OTQuODc1LTU2LjEwNiAyNi43NTktMTA4Ljk4OSA3MC41MjktMTQ0LjEgMTYuNTA5IDIyLjE0MSAzOC4xMDIgMzkuOTkyIDYyLjk1NCA1Mi4wNDF6IiBmaWxsPSIjZjQzODAwIi8+PHBhdGggZD0iTTMwNC4yNjIgMTcwLjI1YzQ0LjI3OCAxOS43ODYgNzIuOTIxIDYzLjk1OCA3Mi45MjEgMTEyLjQ1NiAwIDY3LjU0NC01NS41NTkgMTIzLjEzNC0xMjMuMTAzIDEyMy4xNzJoLS4wMDljLTY3LjU1NCAwLTEyMy4xNDMtNTUuNTg5LTEyMy4xNDMtMTIzLjE0MyAwLTMxLjcwNCAxMi4yNDQtNjIuMjE1IDM0LjE2MS04NS4xMjUgMTEuNDg0IDE2LjA1MiAyNi42NDUgMjkuMTI1IDQ0LjIxMiAzOC4xMjIuNjIyLTM5LjkwOCAxOS4wMzMtNzcuNTI0IDUwLjE2Ny0xMDIuNDk5IDExLjc0MyAxNS43NDkgMjcuMTAyIDI4LjQ0NiA0NC43NzkgMzcuMDE3eiIgZmlsbD0iI2ZmNjQxMCIvPjxwYXRoIGQ9Ik0yNTMuOTcxIDQwMC43MzhoLjE2OWM0OS42MzIgMCA5MC40NzItNDAuODQxIDkwLjQ3Mi05MC40NzIgMC00NS4xOTYtMzMuODY4LTgzLjgwOC03OC42NzktODkuNy0yNC45MDcgMjIuMjg5LTQxLjMyNyA1Mi41NDQtNDYuNDQyIDg1LjU3NC0xOC41ODYtNC41NTQtMzYuMDgtMTIuNzY0LTUxLjQ2LTI0LjE0OS0zLjAwMiA5LjEyNC00LjUzMiAxOC42NjktNC41MzIgMjguMjc1IDAgNDkuNjMxIDQwLjg0IDkwLjQ3MiA5MC40NzIgOTAuNDcyeiIgZmlsbD0iI2ZmYjg1NSIvPjwvc3ZnPg==" style="height:20px;width:20px;vertical-align:middle;padding:6px 4px 6px 0" alt="">';
+			$icon  = '<img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjY0IDI2IDM4NCAzODQiPjxwYXRoIGQ9Ik0zMjQuNjQgNzguMDQ0YzYyLjI0OCAyNy44MTcgMTAyLjUxNiA4OS45MTYgMTAyLjUxNiAxNTguMDk3IDAgOTQuOTU5LTc4LjEwOCAxNzMuMTExLTE3My4wNjYgMTczLjE2NWgtLjAxM2MtOTQuOTcyIDAtMTczLjEyMi03OC4xNTEtMTczLjEyMi0xNzMuMTIzIDAtNDQuNTcyIDE3LjIxMy04Ny40NjcgNDguMDI1LTExOS42NzQgMTYuMTQ1IDIyLjU2NyAzNy40NTkgNDAuOTQ1IDYyLjE1NiA1My41OTQuODc1LTU2LjEwNiAyNi43NTktMTA4Ljk4OSA3MC41MjktMTQ0LjEgMTYuNTA5IDIyLjE0MSAzOC4xMDIgMzkuOTkyIDYyLjk1NCA1Mi4wNDF6IiBmaWxsPSIjZjQzODAwIi8+PHBhdGggZD0iTTMwNC4yNjIgMTcwLjI1YzQ0LjI3OCAxOS43ODYgNzIuOTIxIDYzLjk1OCA3Mi45MjEgMTEyLjQ1NiAwIDY3LjU0NC01NS41NTkgMTIzLjEzNC0xMjMuMTAzIDEyMy4xNzJoLS4wMDljLTY3LjU1NCAwLTEyMy4xNDMtNTUuNTg5LTEyMy4xNDMtMTIzLjE0MyAwLTMxLjcwNCAxMi4yNDQtNjIuMjE1IDM0LjE2MS04NS4xMjUgMTEuNDg0IDE2LjA1MiAyNi42NDUgMjkuMTI1IDQ0LjIxMiAzOC4xMjIuNjIyLTM5LjkwOCAxOS4wMzMtNzcuNTI0IDUwLjE2Ny0xMDIuNDk5IDExLjc0MyAxNS43NDkgMjcuMTAyIDI4LjQ0NiA0NC43NzkgMzcuMDE3eiIgZmlsbD0iI2ZmNjQxMCIvPjxwYXRoIGQ9Ik0yNTMuOTcxIDQwMC43MzhoLjE2OWM0OS42MzIgMCA5MC40NzItNDAuODQxIDkwLjQ3Mi05MC40NzIgMC00NS4xOTYtMzMuODY4LTgzLjgwOC03OC42NzktODkuNy0yNC45MDcgMjIuMjg5LTQxLjMyNyA1Mi41NDQtNDYuNDQyIDg1LjU3NC0xOC41ODYtNC41NTQtMzYuMDgtMTIuNzY0LTUxLjQ2LTI0LjE0OS0zLjAwMiA5LjEyNC00LjUzMiAxOC42NjktNC41MzIgMjguMjc1IDAgNDkuNjMxIDQwLjg0IDkwLjQ3MiA5MC40NzIgOTAuNDcyeiIgZmlsbD0iI2ZmYjg1NSIvPjwvc3ZnPg==" style="height:13px;width:13px;vertical-align:middle;padding:6px 4px 6px 0" alt="">';
 			$label = sprintf(
 				/* translators: %s: number of URLs */
 				__( '%s URLs', 'xml-cache' ),
@@ -161,6 +161,13 @@ final class Plugin {
 				'title'  => __( 'Open Sitemap', 'xml-cache' ),
 				'href'   => $sitemap_url,
 				'meta'   => array( 'target' => '_blank' ),
+			) );
+
+			$admin_bar->add_node( array(
+				'parent' => 'xml-cache',
+				'id'     => 'xml-cache-generate',
+				'title'  => __( 'Generate Sitemap', 'xml-cache' ),
+				'href'   => '#xml-cache-generate',
 			) );
 
 			$admin_bar->add_node( array(
@@ -193,19 +200,26 @@ final class Plugin {
 			(function(){
 				var c=document.getElementById('wp-admin-bar-xml-cache-copy');
 				var d=document.getElementById('wp-admin-bar-xml-cache-clear');
+				var g=document.getElementById('wp-admin-bar-xml-cache-generate');
+				function updateLabel(el,txt,ms){var a=el.querySelector('a');if(a){var o=a.textContent;a.textContent=txt;setTimeout(function(){a.textContent=o},ms||2000)}}
+				function updateCount(n){var l=document.querySelector('#wp-admin-bar-xml-cache .ab-label');if(l){l.textContent=<?php echo wp_json_encode( __( '%s URLs', 'xml-cache' ) ); ?>.replace('%s',n.toLocaleString())}}
 				if(c){c.addEventListener('click',function(e){
 					e.preventDefault();
 					navigator.clipboard.writeText(<?php echo wp_json_encode( $bar_data['sitemap_url'] ); ?>).then(function(){
-						var a=c.querySelector('a');if(a){var o=a.textContent;a.textContent=<?php echo wp_json_encode( __( 'Copied!', 'xml-cache' ) ); ?>;setTimeout(function(){a.textContent=o},2000)}
+						updateLabel(c,<?php echo wp_json_encode( __( 'Copied!', 'xml-cache' ) ); ?>);
 					});
 				})}
 				if(d){d.addEventListener('click',function(e){
 					e.preventDefault();
 					fetch(<?php echo wp_json_encode( $bar_data['rest_url'] ); ?>,{method:'DELETE',credentials:'same-origin',headers:{'X-WP-Nonce':<?php echo wp_json_encode( $bar_data['nonce'] ); ?>}}).then(function(r){return r.json()}).then(function(data){
-						if(data.success){
-							var a=d.querySelector('a');if(a){var o=a.textContent;a.textContent=<?php echo wp_json_encode( __( 'Cleared!', 'xml-cache' ) ); ?>;setTimeout(function(){a.textContent=o},2000)}
-							var l=document.querySelector('#wp-admin-bar-xml-cache .ab-label');if(l){l.textContent=<?php echo wp_json_encode( sprintf( __( '%s URLs', 'xml-cache' ), '0' ) ); ?>}
-						}
+						if(data.success){updateLabel(d,<?php echo wp_json_encode( __( 'Cleared!', 'xml-cache' ) ); ?>);updateCount(0)}
+					});
+				})}
+				if(g){g.addEventListener('click',function(e){
+					e.preventDefault();
+					updateLabel(g,<?php echo wp_json_encode( __( 'Generating…', 'xml-cache' ) ); ?>,10000);
+					fetch(<?php echo wp_json_encode( $bar_data['rest_url'] ); ?>,{method:'POST',credentials:'same-origin',headers:{'X-WP-Nonce':<?php echo wp_json_encode( $bar_data['nonce'] ); ?>}}).then(function(r){return r.json()}).then(function(data){
+						if(data.success){updateLabel(g,<?php echo wp_json_encode( __( 'Done!', 'xml-cache' ) ); ?>);updateCount(data.data.url_count)}
 					});
 				})}
 			})();

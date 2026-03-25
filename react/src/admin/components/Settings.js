@@ -85,6 +85,29 @@ export default function Settings() {
         } );
     }
 
+    const [ isGenerating, setIsGenerating ] = useState( false );
+
+    const generateSitemap = () => {
+        setIsGenerating( true );
+        apiFetch( {
+            path: xmlCache.restApiNamespace + '/cache',
+            method: 'POST',
+        } ).then( ( result ) => {
+            if ( result.success ) {
+                dispatch( 'core/notices' ).createNotice(
+                    'success',
+                    __( 'Sitemap generated.', 'xml-cache' ),
+                    { type: 'snackbar', isDismissible: true }
+                );
+                setCacheStats( result.data );
+            }
+        } ).catch( ( error ) => {
+            console.error( error );
+        } ).finally( () => {
+            setIsGenerating( false );
+        } );
+    }
+
     const onChangeSetting = ( option, value ) => {
         if ( ! options || options === false ) { return; }
         const nextOptions = { ...options, [ option ]: value };
@@ -176,6 +199,17 @@ export default function Settings() {
                         disabled={ options === false || sitemapUrl === false }
                     >
                         { __( 'Open Sitemap', 'xml-cache' ) }
+                    </Button>
+
+                    <Button
+                        variant="secondary"
+                        icon="database"
+                        size="compact"
+                        onClick={ generateSitemap }
+                        isBusy={ isGenerating }
+                        disabled={ options === false || sitemapUrl === false || isGenerating }
+                    >
+                        { __( 'Generate Sitemap', 'xml-cache' ) }
                     </Button>
 
                     <Button
