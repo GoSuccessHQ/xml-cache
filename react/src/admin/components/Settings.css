@@ -1,3 +1,7 @@
+.xml-cache-settings {
+	container-type: inline-size;
+}
+
 .xml-cache-buttons {
 	display: grid;
 	grid-template-columns: repeat(3, 1fr);
@@ -11,7 +15,7 @@
 	align-items: center;
 }
 
-@media (max-width: 600px) {
+@container (max-width: 500px) {
 	.xml-cache-buttons {
 		grid-template-columns: 1fr;
 	}
