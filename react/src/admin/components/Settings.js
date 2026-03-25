@@ -116,7 +116,7 @@ export default function Settings() {
         <div className="wrap">
 
             <Notices />
-            <Card className="xml-cache-settings" style={ { maxWidth: '600px' } }>
+            <Card className="xml-cache" style={ { maxWidth: '600px' } }>
                 <CardHeader>
                     <h1>
                         { __( 'XML Cache Settings', 'xml-cache' ) }
@@ -140,7 +140,7 @@ export default function Settings() {
                 
                 <CardDivider />
 
-                <CardBody className="xml-cache-buttons">
+                <CardBody className="xml-cache__buttons">
                     <Button
                         variant="primary"
                         href={ sitemapUrl }
@@ -175,7 +175,7 @@ export default function Settings() {
                 
                 <CardDivider />
 
-                <CardBody className="xml-cache-toggles">
+                <CardBody className="xml-cache__toggles">
                     <ToggleControl
                         __nextHasNoMarginBottom
                         label={ __( 'Include posts', 'xml-cache' ) }

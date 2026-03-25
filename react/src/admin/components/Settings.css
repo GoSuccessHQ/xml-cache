@@ -1,26 +1,26 @@
-.xml-cache-settings {
+.xml-cache {
 	container-type: inline-size;
-}
 
-.xml-cache-buttons {
-	display: grid;
-	grid-template-columns: repeat(3, 1fr);
-	gap: 1rem;
-}
-
-.xml-cache-toggles {
-	display: grid;
-	grid-template-columns: 1fr 1fr;
-	gap: 1rem;
-	align-items: center;
-}
-
-@container (max-width: 500px) {
-	.xml-cache-buttons {
-		grid-template-columns: 1fr;
+	&__buttons {
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		gap: 1rem;
 	}
 
-	.xml-cache-toggles {
-		grid-template-columns: 1fr;
+	&__toggles {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 1rem;
+		align-items: center;
+	}
+
+	@container (max-width: 500px) {
+		&__buttons {
+			grid-template-columns: 1fr;
+		}
+
+		&__toggles {
+			grid-template-columns: 1fr;
+		}
 	}
 }
