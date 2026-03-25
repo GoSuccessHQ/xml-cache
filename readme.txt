@@ -32,6 +32,16 @@ The sitemap can be accessed at /cache.xml. You can also simply click on the "Ope
 
 Open the post or page you want to exclude. You will find the option to disable the XML cache on the right.
 
+= The XML Cache toggle does not appear for my custom post type. What can I do? =
+
+The block editor requires the custom post type to declare support for `custom-fields`. If you registered the post type yourself, add it like this:
+
+`'supports' => array( 'title', 'editor', 'custom-fields' )`
+
+If the post type is registered by another plugin, you can add support in your theme's `functions.php`:
+
+`add_post_type_support( 'your_post_type', 'custom-fields' );`
+
 == Installation ==
 
 The easiest way to install XML Cache is by visiting your **Plugins > Add New** menu. Search for "XML Cache" and install the first result you see there.
