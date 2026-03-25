@@ -1,0 +1,22 @@
+.xml-cache-buttons {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	gap: 1rem;
+}
+
+.xml-cache-toggles {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 1rem;
+	align-items: center;
+}
+
+@media (max-width: 600px) {
+	.xml-cache-buttons {
+		grid-template-columns: 1fr;
+	}
+
+	.xml-cache-toggles {
+		grid-template-columns: 1fr;
+	}
+}

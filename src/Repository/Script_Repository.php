@@ -51,6 +51,13 @@ final class Script_Repository {
 
 		wp_set_script_translations( 'xml-cache', 'xml-cache' );
 
+		wp_enqueue_style(
+			'xml-cache',
+			$this->plugin_configuration->get_url() . 'assets/admin/index.css',
+			array(),
+			$asset_file['version']
+		);
+
         wp_localize_script(
             'xml-cache',
             'xmlCache',

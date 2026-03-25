@@ -5,6 +5,7 @@ import { useCopyToClipboard } from '@wordpress/compose';
 import { useState, useEffect, createInterpolateElement } from '@wordpress/element';
 import { dispatch } from '@wordpress/data';
 import Notices from './Notices';
+import './Settings.css';
 
 export default function Settings() {
     const [ options, setOptions ] = useState( null );
@@ -115,7 +116,7 @@ export default function Settings() {
         <div className="wrap">
 
             <Notices />
-            <Card style={ { maxWidth: '500px' } }>
+            <Card style={ { maxWidth: '600px' } }>
                 <CardHeader>
                     <h1>
                         { __( 'XML Cache Settings', 'xml-cache' ) }
@@ -139,13 +140,7 @@ export default function Settings() {
                 
                 <CardDivider />
 
-                <CardBody
-                    style={ {
-                        display: 'grid',
-                        gridTemplateColumns: '1fr 1fr 1fr',
-                        gap: '1rem'
-                    } }
-                >
+                <CardBody className="xml-cache-buttons">
                     <Button
                         variant="primary"
                         href={ sitemapUrl }
@@ -180,14 +175,7 @@ export default function Settings() {
                 
                 <CardDivider />
 
-                <CardBody
-                    style={ {
-                        display: 'grid',
-                        gridTemplateColumns: '1fr 1fr',
-                        gap: '1rem',
-                        alignItems: 'center'
-                    } }
-                >
+                <CardBody className="xml-cache-toggles">
                     <ToggleControl
                         __nextHasNoMarginBottom
                         label={ __( 'Include posts', 'xml-cache' ) }
