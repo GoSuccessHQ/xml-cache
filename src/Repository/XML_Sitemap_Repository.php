@@ -25,6 +25,13 @@ final class XML_Sitemap_Repository {
 	private const TRANSIENT_KEY = 'xml_cache_sitemap';
 
 	/**
+	 * Whether the cache has already been invalidated during this request.
+	 *
+	 * @var bool
+	 */
+	private static bool $cache_invalidated = false;
+
+	/**
 	 * Collected sitemap URL entries.
 	 *
 	 * Each entry is an array with keys 'loc' (string) and optionally 'lastmod' (string, W3C date).
@@ -660,8 +667,16 @@ final class XML_Sitemap_Repository {
 
 	/**
 	 * Invalidate the cached sitemap. Should be called on content changes.
+	 *
+	 * Throttled to run only once per request to avoid redundant deletes
+	 * during bulk operations.
 	 */
 	public static function invalidate_cache(): void {
+		if ( self::$cache_invalidated ) {
+			return;
+		}
+
 		delete_transient( self::TRANSIENT_KEY );
+		self::$cache_invalidated = true;
 	}
 }
