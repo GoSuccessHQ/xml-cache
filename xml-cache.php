@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       XML Cache
  * Description:       Generates an XML sitemap for cache plugins.
- * Version:           2.0.0
+ * Version:           2.1.0
  * Requires at least: 6.4
  * Requires PHP:      8.2
  * Author:            GoSuccess
