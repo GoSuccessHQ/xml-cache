@@ -100,5 +100,7 @@ final class Plugin {
 		add_action( 'created_term', $invalidate );
 		add_action( 'edited_term', $invalidate );
 		add_action( 'delete_term', $invalidate );
+		add_action( 'activated_plugin', $invalidate );
+		add_action( 'deactivated_plugin', $invalidate );
 	}
 }
