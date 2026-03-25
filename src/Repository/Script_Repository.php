@@ -49,6 +49,8 @@ final class Script_Repository {
 			true
 		);
 
+		wp_set_script_translations( 'xml-cache', 'xml-cache' );
+
         wp_localize_script(
             'xml-cache',
             'xmlCache',
@@ -68,11 +70,13 @@ final class Script_Repository {
 		$asset_file = include $this->plugin_configuration->get_path() . 'assets/settings-panel/index.asset.php';
 
 		wp_enqueue_script(
-			'xml-cache',
+			'xml-cache-settings-panel',
 			$this->plugin_configuration->get_url() . 'assets/settings-panel/index.js',
 			$asset_file['dependencies'],
 			$asset_file['version'],
 			true
 		);
+
+		wp_set_script_translations( 'xml-cache-settings-panel', 'xml-cache' );
 	}
 }
