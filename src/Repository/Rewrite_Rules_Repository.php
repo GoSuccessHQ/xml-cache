@@ -27,7 +27,7 @@ final class Rewrite_Rules_Repository {
 	/**
 	 * Add rewrite rules for the sitemap endpoint.
 	 */
-	public static function add_rewrite_rules(): void {
+	public function add_rewrite_rules(): void {
 		add_rewrite_rule(
 			'^cache\.xml$',
 			'index.php?xml_cache=true',
@@ -70,7 +70,7 @@ final class Rewrite_Rules_Repository {
 	 * @return string
 	 */
 	public function redirect( string $redirect_url, string $request_url ): string {
-		$xml_cache = get_query_var( 'xml_cache', true );
+		$xml_cache = get_query_var( 'xml_cache' );
 
 		if ( $xml_cache ) {
 			return $request_url;

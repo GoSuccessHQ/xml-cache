@@ -6,8 +6,9 @@
   "author": "GoSuccess",
   "main": "index.js",
   "scripts": {
-    "start": "wp-scripts start",
-    "build": "wp-scripts build --webpack-src-dir=src/admin/ --output-path=../assets/admin/"
+    "start": "wp-scripts start --webpack-src-dir=src/admin/ --output-path=../assets/admin/",
+    "start:panel": "wp-scripts start --webpack-src-dir=src/settings-panel/ --output-path=../assets/settings-panel/",
+    "build": "wp-scripts build --webpack-src-dir=src/admin/ --output-path=../assets/admin/ && wp-scripts build --webpack-src-dir=src/settings-panel/ --output-path=../assets/settings-panel/"
   },
   "dependencies": {
     "@wordpress/api-fetch": "^7.29.0",

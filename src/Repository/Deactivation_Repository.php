@@ -14,7 +14,7 @@ use GoSuccess\XML_Cache\Configuration\Plugin_Configuration;
 /**
  * Repository for deactivation operations.
  */
-class Deactivation_Repository {
+final class Deactivation_Repository {
 	/**
 	 * Plugin basename used to match deactivation actions.
 	 *

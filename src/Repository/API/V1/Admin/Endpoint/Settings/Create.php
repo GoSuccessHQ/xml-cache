@@ -36,8 +36,34 @@ final class Create extends API_Endpoint_Base {
 			array(
 				'methods'             => WP_REST_Server::CREATABLE,
 				'callback'            => array( $this, 'callback' ),
-				'args'                => array(),
 				'permission_callback' => array( $this, 'permission_callback' ),
+				'args'                => array(
+					'posts_enabled'             => array(
+						'type'              => 'boolean',
+						'required'          => true,
+						'sanitize_callback' => 'rest_sanitize_boolean',
+					),
+					'custom_post_types_enabled' => array(
+						'type'              => 'boolean',
+						'required'          => true,
+						'sanitize_callback' => 'rest_sanitize_boolean',
+					),
+					'categories_enabled'        => array(
+						'type'              => 'boolean',
+						'required'          => true,
+						'sanitize_callback' => 'rest_sanitize_boolean',
+					),
+					'archives_enabled'          => array(
+						'type'              => 'boolean',
+						'required'          => true,
+						'sanitize_callback' => 'rest_sanitize_boolean',
+					),
+					'tags_enabled'              => array(
+						'type'              => 'boolean',
+						'required'          => true,
+						'sanitize_callback' => 'rest_sanitize_boolean',
+					),
+				),
 			)
 		);
 	}
@@ -52,7 +78,13 @@ final class Create extends API_Endpoint_Base {
 		$api_response = new API_Response();
 
 		try {
-			$options = rest_sanitize_array( $request->get_json_params() );
+			$options = array(
+				'posts_enabled'             => $request->get_param( 'posts_enabled' ),
+				'custom_post_types_enabled' => $request->get_param( 'custom_post_types_enabled' ),
+				'categories_enabled'        => $request->get_param( 'categories_enabled' ),
+				'archives_enabled'          => $request->get_param( 'archives_enabled' ),
+				'tags_enabled'              => $request->get_param( 'tags_enabled' ),
+			);
 			update_option( 'xml_cache_settings', $options );
 
 			$api_response->set_success( true );

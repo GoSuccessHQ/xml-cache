@@ -28,7 +28,7 @@ final class Uninstall_Controller {
 	) {
 		register_uninstall_hook(
 			$this->plugin_configuration->get_file(),
-			array( $this->uninstall_repository, 'uninstall' )
+			array( Uninstall_Repository::class, 'uninstall' )
 		);
 	}
 }

@@ -28,7 +28,7 @@ final class Activation_Repository {
 
 		add_option( 'xml_cache_settings', self::get_default_settings() );
 
-		Rewrite_Rules_Repository::add_rewrite_rules();
+		add_rewrite_rule( '^cache\.xml$', 'index.php?xml_cache=true', 'top' );
 		flush_rewrite_rules();
 	}
 
@@ -39,13 +39,11 @@ final class Activation_Repository {
 	 */
 	public static function get_default_settings(): array {
 		return array(
-			array(
-				'posts_enabled'             => true,
-				'custom_post_types_enabled' => true,
-				'categories_enabled'        => true,
-				'archives_enabled'          => true,
-				'tags_enabled'              => true,
-			)
+			'posts_enabled'             => true,
+			'custom_post_types_enabled' => true,
+			'categories_enabled'        => true,
+			'archives_enabled'          => true,
+			'tags_enabled'              => true,
 		);
 	}
 }

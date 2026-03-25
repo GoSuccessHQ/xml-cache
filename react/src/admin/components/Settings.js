@@ -8,7 +8,6 @@ import Notices from './Notices';
 
 export default function Settings() {
     const [ options, setOptions ] = useState( null );
-    const [ optionsSaved, setOptionsSaved ] = useState( false );
     const [ sitemapUrl, setSitemapUrl ] = useState( null );
     const [ error, setError ] = useState( null );
 
@@ -30,8 +29,6 @@ export default function Settings() {
             data: nextOptions,
         } ).then( ( result ) => {
             if ( result.success ) {
-                setOptionsSaved(true);
-
                 dispatch( 'core/notices' ).createNotice(
                     'success',
                     __( 'Settings saved.', 'xml-cache' ),
@@ -57,10 +54,7 @@ export default function Settings() {
 
     const onChangeSetting = ( option, value ) => {
         if ( ! options || options === false ) { return; }
-        const nextOptions = [
-            { ...options[0], [ option ]: value },
-            options[1] ? { ...options[1] } : {}
-        ];
+        const nextOptions = { ...options, [ option ]: value };
         setOptions( nextOptions );
         saveOptions( nextOptions );
     }
@@ -94,11 +88,7 @@ export default function Settings() {
             setSitemapUrl( false );
             setError( error.message );
         } );
-
-        return () => {
-            setOptionsSaved( false );
-        }
-    }, [optionsSaved]);
+    }, []);
 
     if ( options === null || sitemapUrl === null ) {
         return <Spinner />;
@@ -119,10 +109,7 @@ export default function Settings() {
                     <>
                     <CardBody>
                         <Notice status="error" isDismissible={ false }>
-                            { sprintf(
-                                __( '%s', 'xml-cache' ),
-                                error
-                            ) }
+                            { error }
                         </Notice>
                     </CardBody>
                     <CardDivider />
@@ -177,7 +164,7 @@ export default function Settings() {
                     <ToggleControl
                         __nextHasNoMarginBottom
                         label={ __( 'Include posts', 'xml-cache' ) }
-                        checked={ options[0].posts_enabled }
+                        checked={ options.posts_enabled }
                         onChange={ ( state ) => onChangeSetting( 'posts_enabled', state ) }
                         disabled={ options === false || sitemapUrl === false }
                     />
@@ -185,7 +172,7 @@ export default function Settings() {
                     <ToggleControl
                         __nextHasNoMarginBottom
                         label={ __( 'Include custom post types', 'xml-cache' ) }
-                        checked={ options[0].custom_post_types_enabled ?? true }
+                        checked={ options.custom_post_types_enabled ?? true }
                         onChange={ ( state ) => onChangeSetting( 'custom_post_types_enabled', state ) }
                         disabled={ options === false || sitemapUrl === false }
                     />
@@ -193,7 +180,7 @@ export default function Settings() {
                     <ToggleControl
                         __nextHasNoMarginBottom
                         label={ __( 'Include categories', 'xml-cache' ) }
-                        checked={ options[0].categories_enabled }
+                        checked={ options.categories_enabled }
                         onChange={ ( state ) => onChangeSetting( 'categories_enabled', state ) }
                         disabled={ options === false || sitemapUrl === false }
                     />
@@ -201,7 +188,7 @@ export default function Settings() {
                     <ToggleControl
                         __nextHasNoMarginBottom
                         label={ __( 'Include archives', 'xml-cache' ) }
-                        checked={ options[0].archives_enabled }
+                        checked={ options.archives_enabled }
                         onChange={ ( state ) => onChangeSetting( 'archives_enabled', state ) }
                         disabled={ options === false || sitemapUrl === false }
                     />
@@ -209,7 +196,7 @@ export default function Settings() {
                     <ToggleControl
                         __nextHasNoMarginBottom
                         label={ __( 'Include tags', 'xml-cache' ) }
-                        checked={ options[0].tags_enabled }
+                        checked={ options.tags_enabled }
                         onChange={ ( state ) => onChangeSetting( 'tags_enabled', state ) }
                         disabled={ options === false || sitemapUrl === false }
                     />

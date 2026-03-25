@@ -35,27 +35,31 @@ final class XML_Sitemap_Repository {
 			return;
 		}
 
+		// Backwards compatibility: unwrap nested array from v1.x.
+		if ( isset( $option[0] ) && is_array( $option[0] ) ) {
+			$option = $option[0];
+		}
 
-		if ( ! empty( $option[0]['posts_enabled'] ) ) {
+		if ( ! empty( $option['posts_enabled'] ) ) {
 			// Only core posts/pages; CPTs are handled via separate toggle below.
 			$this->get_post_urls();
 		}
 
 		// Custom Post Types: default to enabled if not explicitly set (backwards compatibility).
-		$cpt_enabled = isset( $option[0]['custom_post_types_enabled'] ) ? ! empty( $option[0]['custom_post_types_enabled'] ) : true;
+		$cpt_enabled = isset( $option['custom_post_types_enabled'] ) ? ! empty( $option['custom_post_types_enabled'] ) : true;
 		if ( $cpt_enabled ) {
 			$this->get_custom_post_type_urls();
 		}
 
-		if ( ! empty( $option[0]['categories_enabled'] ) ) {
+		if ( ! empty( $option['categories_enabled'] ) ) {
 			$this->get_category_urls();
 		}
 
-		if ( ! empty( $option[0]['archives_enabled'] ) ) {
+		if ( ! empty( $option['archives_enabled'] ) ) {
 			$this->get_archive_urls();
 		}
 
-		if ( ! empty( $option[0]['tags_enabled'] ) ) {
+		if ( ! empty( $option['tags_enabled'] ) ) {
 			$this->get_tag_urls();
 		}
 	}
@@ -122,9 +126,8 @@ final class XML_Sitemap_Repository {
 	private function get_category_urls(): void {
 		$category_ids = get_categories(
 			array(
-				'fields'        => 'ids',
-				'orderby'       => 'id',
-				'cache_results' => false,
+				'fields'  => 'ids',
+				'orderby' => 'id',
 			)
 		);
 
@@ -137,9 +140,8 @@ final class XML_Sitemap_Repository {
 	private function get_tag_urls(): void {
 		$tag_ids = get_tags(
 			array(
-				'fields'        => 'ids',
-				'orderby'       => 'term_id',
-				'cache_results' => false,
+				'fields'  => 'ids',
+				'orderby' => 'term_id',
 			)
 		);
 
@@ -150,28 +152,18 @@ final class XML_Sitemap_Repository {
 	 * Collect archive URLs.
 	 */
 	private function get_archive_urls(): void {
-		$archives = wp_get_archives(
-			array(
-				'format' => 'custom',
-				'before' => '',
-				'after'  => '|',
-				'echo'   => false,
-				'order'  => 'ASC',
-			)
+		global $wpdb;
+
+		$months = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+			"SELECT DISTINCT YEAR(post_date) AS `year`, MONTH(post_date) AS `month`
+			FROM {$wpdb->posts}
+			WHERE post_type = 'post' AND post_status = 'publish'
+			ORDER BY post_date ASC"
 		);
 
-		if ( ! empty( $archives ) ) {
-			$archives = explode( '|', $archives );
-			$archives = array_filter(
-				$archives,
-				function ( $item ) {
-					return '' !== trim( $item );
-				}
-			);
-
-			foreach ( $archives as $archive ) {
-				preg_match( '/href=["\']?([^"\'>]+)["\']>(.+)<\/a>/', $archive, $matches );
-				$this->sitemap_urls[] = $matches[1];
+		if ( ! empty( $months ) ) {
+			foreach ( $months as $row ) {
+				$this->sitemap_urls[] = get_month_link( (int) $row->year, (int) $row->month );
 			}
 		}
 	}
@@ -185,6 +177,11 @@ final class XML_Sitemap_Repository {
 	private function get_urls( callable $permalink_callable, array $url_ids ): void {
 		if ( ! is_callable( $permalink_callable ) || empty( $url_ids ) ) {
 			return;
+		}
+
+		// Prime the metadata cache for all post IDs in a single query.
+		if ( 'get_permalink' === $permalink_callable ) {
+			update_meta_cache( 'post', $url_ids );
 		}
 
 		$permalinks_structure = get_option( 'permalink_structure' );
@@ -204,23 +201,15 @@ final class XML_Sitemap_Repository {
 			if ( ! empty( $permalink ) ) {
 				$this->sitemap_urls[] = $permalink;
 
-				$args = array(
-					'numberposts' => -1,
-					'fields'      => 'ids',
-					'orderby'     => 'ID',
-					'post_status' => 'publish',
-				);
-
 				$numpage = 1;
-
 				$context = 'archive';
+
 				if ( 'get_permalink' === $permalink_callable ) { // Singular or posts page.
 					if ( $page_for_posts === $id ) {
 						// Posts page behaves like an archive for pagination.
-						$args['post_type'] = 'post';
-						$posts_found       = get_posts( $args );
-						$numpage           = (int) ceil( count( $posts_found ) / max( 1, $posts_per_page ) );
-						$context           = 'archive';
+						$total_posts = (int) wp_count_posts( 'post' )->publish;
+						$numpage     = (int) ceil( $total_posts / max( 1, $posts_per_page ) );
+						$context     = 'archive';
 					} else {
 						// Multipage singular content.
 						$postdata = generate_postdata( $id );
@@ -230,16 +219,12 @@ final class XML_Sitemap_Repository {
 						$context = 'singular';
 					}
 				} else {
-					// Category or tag archives.
-					if ( 'get_category_link' === $permalink_callable ) {
-						$args['category'] = $id;
-					} elseif ( 'get_tag_link' === $permalink_callable ) {
-						$args['tag_id'] = $id;
+					// Category or tag archives — use term count instead of fetching all posts.
+					$term = get_term( $id );
+					if ( $term && ! is_wp_error( $term ) ) {
+						$numpage = (int) ceil( (int) $term->count / max( 1, $posts_per_page ) );
 					}
-
-					$posts_found = get_posts( $args );
-					$numpage     = (int) ceil( count( $posts_found ) / max( 1, $posts_per_page ) );
-					$context     = 'archive';
+					$context = 'archive';
 				}
 
 				while ( $numpage > 1 ) {

@@ -55,6 +55,11 @@ final class Read extends API_Endpoint_Base {
 		try {
 			$options = get_option( 'xml_cache_settings', Activation_Repository::get_default_settings() );
 
+			// Backwards compatibility: unwrap nested array from v1.x.
+			if ( isset( $options[0] ) && is_array( $options[0] ) ) {
+				$options = $options[0];
+			}
+
 			$api_response->set_success( true );
 			$api_response->set_data( $options );
 		} catch ( Exception $e ) {
