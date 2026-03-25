@@ -25,9 +25,12 @@ final class XML_Sitemap_Repository {
 	private const TRANSIENT_KEY = 'xml_cache_sitemap';
 
 	/**
-	 * Transient expiration in seconds (24 hours).
+	 * Transient expiration in seconds.
+	 *
+	 * Set to 0 (no expiration) because the cache is explicitly invalidated
+	 * on every content change via save_post, delete_post, and term hooks.
 	 */
-	private const TRANSIENT_EXPIRATION = DAY_IN_SECONDS;
+	private const TRANSIENT_EXPIRATION = 0;
 
 	/**
 	 * Collected sitemap URL entries.
