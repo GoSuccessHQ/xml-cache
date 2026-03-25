@@ -20,9 +20,13 @@ final class Plugin_Configuration {
 	/**
 	 * Constructor.
 	 *
-	 * @param string $file  Plugin file path.
-	 * @param string $slug  Plugin slug used for admin pages and URLs.
-	 * @param string $title Plugin title.
+	 * @param string $file               Plugin file path.
+	 * @param string $slug               Plugin slug used for admin pages and URLs.
+	 * @param string $title              Plugin title.
+	 * @param string $support_url        Plugin support URL.
+	 * @param string $review_url         Plugin review URL.
+	 * @param string $github_url         Plugin GitHub URL.
+	 * @param string $rest_api_namespace REST API namespace.
 	 */
 	public function __construct(
 		/**
@@ -37,22 +41,22 @@ final class Plugin_Configuration {
 		 * Plugin title.
 		 */
 		private string $title,
-        /**
-         * Plugin support URL.
-         */
+		/**
+		 * Plugin support URL.
+		 */
 		private string $support_url,
-        /**
-         * Plugin review URL.
-         */
+		/**
+		 * Plugin review URL.
+		 */
 		private string $review_url,
-        /**
-         * Plugin GitHub URL.
-         */
+		/**
+		 * Plugin GitHub URL.
+		 */
 		private string $github_url,
-        /**
-         * REST API Namespace
-         */
-        private string $rest_api_namespace,
+		/**
+		 * REST API Namespace
+		 */
+		private string $rest_api_namespace,
 	) {}
 
 	/**
@@ -147,12 +151,12 @@ final class Plugin_Configuration {
 		return esc_url( $this->github_url );
 	}
 
-    /**
-     * Returns the REST API namespace.
-     *
-     * @return string The REST API namespace.
-     */
-    public function get_rest_api_namespace(): string {
-        return $this->rest_api_namespace;
-    }
+	/**
+	 * Returns the REST API namespace.
+	 *
+	 * @return string The REST API namespace.
+	 */
+	public function get_rest_api_namespace(): string {
+		return $this->rest_api_namespace;
+	}
 }

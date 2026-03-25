@@ -237,7 +237,7 @@ final class XML_Sitemap_Repository {
 
 			// Yearly archive (deduplicated).
 			if ( ! isset( $years[ $year ] ) ) {
-				$years[ $year ] = true;
+				$years[ $year ]       = true;
 				$this->sitemap_urls[] = array( 'loc' => get_year_link( $year ) );
 			}
 
@@ -260,7 +260,7 @@ final class XML_Sitemap_Repository {
 		$authors = get_users(
 			array(
 				'has_published_posts' => true,
-				'fields'             => array( 'ID' ),
+				'fields'              => array( 'ID' ),
 			)
 		);
 
@@ -403,7 +403,7 @@ final class XML_Sitemap_Repository {
 					if ( ! empty( $entry['lastmod'] ) ) {
 						$new_entry['lastmod'] = $entry['lastmod'];
 					}
-					$new_entries[]                  = $new_entry;
+					$new_entries[]                = $new_entry;
 					$existing_locs[ $translated ] = true;
 				}
 			}
@@ -449,8 +449,8 @@ final class XML_Sitemap_Repository {
 
 		// TranslatePress: include translated homepages.
 		if ( class_exists( 'TRP_Translate_Press' ) ) {
-			$trp          = \TRP_Translate_Press::get_trp_instance();
-			$trp_settings = $trp->get_component( 'settings' )->get_settings();
+			$trp           = \TRP_Translate_Press::get_trp_instance();
+			$trp_settings  = $trp->get_component( 'settings' )->get_settings();
 			$url_converter = $trp->get_component( 'url_converter' );
 			$home          = home_url( '/' );
 

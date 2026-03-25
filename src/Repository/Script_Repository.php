@@ -36,8 +36,8 @@ final class Script_Repository {
 			return;
 		}
 
-        wp_enqueue_style( 'wp-components' );
-        wp_enqueue_style( 'wp-block-editor' );
+		wp_enqueue_style( 'wp-components' );
+		wp_enqueue_style( 'wp-block-editor' );
 
 		$asset_file = include $this->plugin_configuration->get_path() . 'assets/admin/index.asset.php';
 
@@ -58,16 +58,16 @@ final class Script_Repository {
 			$asset_file['version']
 		);
 
-        wp_localize_script(
-            'xml-cache',
-            'xmlCache',
-            [
-                'restApiNamespace' => $this->plugin_configuration->get_rest_api_namespace(),
-                'supportUrl' => $this->plugin_configuration->get_support_url(),
-                'reviewUrl' => $this->plugin_configuration->get_review_url(),
-                'githubUrl' => $this->plugin_configuration->get_github_url(),
-            ]
-        );
+		wp_localize_script(
+			'xml-cache',
+			'xmlCache',
+			array(
+				'restApiNamespace' => $this->plugin_configuration->get_rest_api_namespace(),
+				'supportUrl'       => $this->plugin_configuration->get_support_url(),
+				'reviewUrl'        => $this->plugin_configuration->get_review_url(),
+				'githubUrl'        => $this->plugin_configuration->get_github_url(),
+			)
+		);
 	}
 
 	/**

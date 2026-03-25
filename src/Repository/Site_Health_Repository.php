@@ -27,13 +27,14 @@ final class Site_Health_Repository {
 		$url_count = $is_cached ? count( $transient ) : 0;
 
 		$fields = array(
-			'sitemap_url' => array(
+			'sitemap_url'  => array(
 				'label' => __( 'Sitemap URL', 'xml-cache' ),
 				'value' => home_url( XML_Sitemap_Repository::SITEMAP_PATH ),
 			),
 			'cache_status' => array(
 				'label' => __( 'Cache status', 'xml-cache' ),
 				'value' => $is_cached
+					/* translators: %s: number of cached URLs */
 					? sprintf( __( 'Cached (%s URLs)', 'xml-cache' ), number_format_i18n( $url_count ) )
 					: __( 'Not cached', 'xml-cache' ),
 			),
