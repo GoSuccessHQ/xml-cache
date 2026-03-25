@@ -11,11 +11,11 @@
     "build": "wp-scripts build --webpack-src-dir=src/admin/ --output-path=../assets/admin/ && wp-scripts build --webpack-src-dir=src/settings-panel/ --output-path=../assets/settings-panel/"
   },
   "dependencies": {
-    "@wordpress/api-fetch": "^7.29.0",
-    "@wordpress/dom-ready": "^4.29.0",
-    "@wordpress/element": "^6.29.0"
+    "@wordpress/api-fetch": "^7.42.0",
+    "@wordpress/dom-ready": "^4.42.0",
+    "@wordpress/element": "^6.42.0"
   },
   "devDependencies": {
-    "@wordpress/scripts": "^30.22.0"
+    "@wordpress/scripts": "^31.7.0"
   }
 }
