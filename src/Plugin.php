@@ -165,13 +165,6 @@ final class Plugin {
 
 			$admin_bar->add_node( array(
 				'parent' => 'xml-cache',
-				'id'     => 'xml-cache-generate',
-				'title'  => __( 'Generate Sitemap', 'xml-cache' ),
-				'href'   => '#xml-cache-generate',
-			) );
-
-			$admin_bar->add_node( array(
-				'parent' => 'xml-cache',
 				'id'     => 'xml-cache-copy',
 				'title'  => __( 'Copy Sitemap URL', 'xml-cache' ),
 				'href'   => '#xml-cache-copy',
@@ -200,7 +193,6 @@ final class Plugin {
 			(function(){
 				var c=document.getElementById('wp-admin-bar-xml-cache-copy');
 				var d=document.getElementById('wp-admin-bar-xml-cache-clear');
-				var g=document.getElementById('wp-admin-bar-xml-cache-generate');
 				function updateLabel(el,txt,ms){var a=el.querySelector('a');if(a){var o=a.textContent;a.textContent=txt;setTimeout(function(){a.textContent=o},ms||2000)}}
 				function updateCount(n){var l=document.querySelector('#wp-admin-bar-xml-cache .ab-label');if(l){l.textContent=<?php echo wp_json_encode( __( '%s URLs', 'xml-cache' ) ); ?>.replace('%s',n.toLocaleString())}}
 				if(c){c.addEventListener('click',function(e){
@@ -213,13 +205,6 @@ final class Plugin {
 					e.preventDefault();
 					fetch(<?php echo wp_json_encode( $bar_data['rest_url'] ); ?>,{method:'DELETE',credentials:'same-origin',headers:{'X-WP-Nonce':<?php echo wp_json_encode( $bar_data['nonce'] ); ?>}}).then(function(r){return r.json()}).then(function(data){
 						if(data.success){updateLabel(d,<?php echo wp_json_encode( __( 'Regenerated!', 'xml-cache' ) ); ?>);updateCount(data.data.url_count)}
-					});
-				})}
-				if(g){g.addEventListener('click',function(e){
-					e.preventDefault();
-					updateLabel(g,<?php echo wp_json_encode( __( 'Generating…', 'xml-cache' ) ); ?>,10000);
-					fetch(<?php echo wp_json_encode( $bar_data['rest_url'] ); ?>,{method:'POST',credentials:'same-origin',headers:{'X-WP-Nonce':<?php echo wp_json_encode( $bar_data['nonce'] ); ?>}}).then(function(r){return r.json()}).then(function(data){
-						if(data.success){updateLabel(g,<?php echo wp_json_encode( __( 'Done!', 'xml-cache' ) ); ?>);updateCount(data.data.url_count)}
 					});
 				})}
 			})();
