@@ -356,15 +356,32 @@ final class XML_Sitemap_Repository {
 	private function get_homepage_url(): void {
 		$this->sitemap_urls[] = array( 'loc' => home_url( '/' ) );
 
-		// Include translated homepages when a multilingual plugin is active.
+		$existing_locs = array_column( $this->sitemap_urls, 'loc' );
+
+		// Polylang: include translated homepages.
 		if ( function_exists( 'pll_languages_list' ) && function_exists( 'pll_home_url' ) ) {
-			$existing_locs = array_column( $this->sitemap_urls, 'loc' );
 			foreach ( pll_languages_list() as $lang ) {
 				$translated_home = pll_home_url( $lang );
 				if ( ! empty( $translated_home ) && ! in_array( $translated_home, $existing_locs, true ) ) {
 					$this->sitemap_urls[] = array( 'loc' => $translated_home );
 					$existing_locs[]      = $translated_home;
 				}
+			}
+		}
+
+		// WPML: include translated homepages.
+		if ( has_filter( 'wpml_active_languages' ) ) {
+			$languages = apply_filters( 'wpml_active_languages', null, 'skip_missing=0' );
+			if ( is_array( $languages ) ) {
+				foreach ( $languages as $lang ) {
+					do_action( 'wpml_switch_language', $lang['language_code'] );
+					$translated_home = home_url( '/' );
+					if ( ! empty( $translated_home ) && ! in_array( $translated_home, $existing_locs, true ) ) {
+						$this->sitemap_urls[] = array( 'loc' => $translated_home );
+						$existing_locs[]      = $translated_home;
+					}
+				}
+				do_action( 'wpml_switch_language', null );
 			}
 		}
 	}
