@@ -65,6 +65,15 @@ To install with the zip file downloaded from this page:
 * Bumped minimum WordPress version to 6.4.
 * Tested up to WordPress 7.0.
 
+= 2.0.0 =
+* Complete rewrite using PSR-4 autoloading and Composer.
+* New React-based admin settings page.
+* Custom post type support.
+* REST API for settings and cache management.
+* Refactored URL collection and sitemap pagination.
+* WPCS compliance with strict types, docblocks, and sanitization.
+* Requires PHP 8.2.
+
 = 1.2.1 =
 * Fixed "Undefined variable $numpage".
 
