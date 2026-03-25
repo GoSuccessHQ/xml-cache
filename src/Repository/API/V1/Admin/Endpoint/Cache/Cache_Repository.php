@@ -9,6 +9,8 @@ declare( strict_types=1 );
 
 namespace GoSuccess\XML_Cache\Repository\API\V1\Admin\Endpoint\Cache;
 
+defined( 'ABSPATH' ) || exit;
+
 use GoSuccess\XML_Cache\Repository\API\V1\Admin\Endpoint\Cache\Delete;
 use GoSuccess\XML_Cache\Repository\API\V1\Admin\Endpoint\Cache\Read;
 

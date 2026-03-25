@@ -1,0 +1,12 @@
+.distignore
+.git
+.gitattributes
+.gitignore
+.github
+.wordpress-org
+composer.json
+composer.lock
+node_modules
+phpcs.xml.dist
+react
+tests

@@ -9,6 +9,8 @@ declare( strict_types=1 );
 
 namespace GoSuccess\XML_Cache;
 
+defined( 'ABSPATH' ) || exit;
+
 use GoSuccess\XML_Cache\CLI\CLI_Command;
 use GoSuccess\XML_Cache\Configuration\Plugin_Configuration;
 use GoSuccess\XML_Cache\Controller\Activation_Controller;

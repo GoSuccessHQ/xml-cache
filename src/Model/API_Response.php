@@ -9,6 +9,8 @@ declare( strict_types=1 );
 
 namespace GoSuccess\XML_Cache\Model;
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * Class Api_Response
  *

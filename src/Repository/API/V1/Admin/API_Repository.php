@@ -9,6 +9,8 @@ declare( strict_types=1 );
 
 namespace GoSuccess\XML_Cache\Repository\API\V1\Admin;
 
+defined( 'ABSPATH' ) || exit;
+
 use GoSuccess\XML_Cache\Repository\API\V1\Admin\Endpoint\Cache\Cache_Repository;
 use GoSuccess\XML_Cache\Repository\API\V1\Admin\Endpoint\Settings\Settings_Repository;
 use GoSuccess\XML_Cache\Repository\API\V1\Admin\Endpoint\XML_Sitemap_URL\XML_Sitemap_URL_Repository;

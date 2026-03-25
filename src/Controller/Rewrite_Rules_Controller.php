@@ -9,6 +9,8 @@ declare( strict_types=1 );
 
 namespace GoSuccess\XML_Cache\Controller;
 
+defined( 'ABSPATH' ) || exit;
+
 use GoSuccess\XML_Cache\Repository\Rewrite_Rules_Repository;
 
 /**

@@ -9,6 +9,8 @@ declare( strict_types=1 );
 
 namespace GoSuccess\XML_Cache\Repository;
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * Adds an XML Cache section to the Site Health Info page.
  */

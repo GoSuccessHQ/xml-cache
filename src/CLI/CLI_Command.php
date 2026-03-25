@@ -9,6 +9,8 @@ declare( strict_types=1 );
 
 namespace GoSuccess\XML_Cache\CLI;
 
+defined( 'ABSPATH' ) || exit;
+
 use GoSuccess\XML_Cache\Repository\XML_Sitemap_Repository;
 use WP_CLI;
 

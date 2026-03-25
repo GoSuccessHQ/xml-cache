@@ -9,6 +9,8 @@ declare( strict_types=1 );
 
 namespace GoSuccess\XML_Cache\Repository\API\V1\Admin\Endpoint\Settings;
 
+defined( 'ABSPATH' ) || exit;
+
 use Exception;
 use GoSuccess\XML_Cache\Base\API_Endpoint_Base;
 use GoSuccess\XML_Cache\Model\API_Response;

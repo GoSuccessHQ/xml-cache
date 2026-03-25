@@ -9,6 +9,8 @@ declare( strict_types=1 );
 
 namespace GoSuccess\XML_Cache\Base;
 
+defined( 'ABSPATH' ) || exit;
+
 use GoSuccess\XML_Cache\Contracts\API_Endpoint_Contract;
 use WP_REST_Request;
 
