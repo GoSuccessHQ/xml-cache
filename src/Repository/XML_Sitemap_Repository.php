@@ -435,17 +435,18 @@ final class XML_Sitemap_Repository {
 
 		// WPML: include translated homepages.
 		if ( has_filter( 'wpml_active_languages' ) ) {
+			// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- WPML hook.
 			$languages = apply_filters( 'wpml_active_languages', null, 'skip_missing=0' );
 			if ( is_array( $languages ) ) {
 				foreach ( $languages as $lang ) {
-					do_action( 'wpml_switch_language', $lang['language_code'] );
+					do_action( 'wpml_switch_language', $lang['language_code'] ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- WPML hook.
 					$translated_home = home_url( '/' );
 					if ( ! empty( $translated_home ) && ! in_array( $translated_home, $existing_locs, true ) ) {
 						$this->sitemap_urls[] = array( 'loc' => $translated_home );
 						$existing_locs[]      = $translated_home;
 					}
 				}
-				do_action( 'wpml_switch_language', null );
+				do_action( 'wpml_switch_language', null ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- WPML hook.
 			}
 		}
 
