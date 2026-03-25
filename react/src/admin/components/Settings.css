@@ -1,5 +1,7 @@
 .xml-cache {
-	container-type: inline-size;
+	:has(> &) {
+		container-type: inline-size;
+	}
 
 	&__buttons {
 		display: grid;
