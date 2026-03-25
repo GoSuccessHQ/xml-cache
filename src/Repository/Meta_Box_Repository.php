@@ -52,8 +52,6 @@ final class Meta_Box_Repository {
 			'names'
 		);
 
-		unset( $post_types['attachment'] );
-
 		add_meta_box(
 			'xml-cache',
 			__( 'XML Cache', 'xml-cache' ),

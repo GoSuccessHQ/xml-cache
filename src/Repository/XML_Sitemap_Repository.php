@@ -100,13 +100,6 @@ final class XML_Sitemap_Repository {
 			return;
 		}
 
-		// Exclude attachments defensively if registered as public by a plugin.
-		$post_types = array_values( array_diff( $post_types, array( 'attachment' ) ) );
-
-		if ( empty( $post_types ) ) {
-			return;
-		}
-
 		$post_ids = get_posts(
 			array(
 				'numberposts' => -1,
