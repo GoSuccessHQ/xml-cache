@@ -83,6 +83,11 @@ final class Create extends API_Endpoint_Base {
 						'required'          => true,
 						'sanitize_callback' => 'rest_sanitize_boolean',
 					),
+					'admin_bar_enabled'          => array(
+						'type'              => 'boolean',
+						'required'          => true,
+						'sanitize_callback' => 'rest_sanitize_boolean',
+					),
 				),
 			)
 		);
@@ -108,6 +113,7 @@ final class Create extends API_Endpoint_Base {
 				'post_type_archives_enabled' => $request->get_param( 'post_type_archives_enabled' ),
 				'date_archives_enabled'      => $request->get_param( 'date_archives_enabled' ),
 				'homepage_enabled'           => $request->get_param( 'homepage_enabled' ),
+				'admin_bar_enabled'          => $request->get_param( 'admin_bar_enabled' ),
 			);
 			update_option( 'xml_cache_settings', $options );
 

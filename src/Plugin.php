@@ -47,6 +47,7 @@ final class Plugin {
 	public function __construct() {
 		$this->register_cache_invalidation_hooks();
 		$this->register_cli_commands();
+		$this->register_admin_bar();
 
 		$config = new Plugin_Configuration(
 			file: XML_CACHE_FILE,
@@ -113,5 +114,32 @@ final class Plugin {
 		if ( defined( 'WP_CLI' ) && WP_CLI ) {
 			\WP_CLI::add_command( 'xml-cache', CLI_Command::class );
 		}
+	}
+
+	/**
+	 * Register admin bar node linking to the sitemap when enabled.
+	 */
+	private function register_admin_bar(): void {
+		add_action( 'admin_bar_menu', static function ( \WP_Admin_Bar $admin_bar ): void {
+			if ( ! current_user_can( 'manage_options' ) ) {
+				return;
+			}
+
+			$settings = XML_Sitemap_Repository::resolve_settings();
+
+			if ( empty( $settings['admin_bar_enabled'] ) ) {
+				return;
+			}
+
+			$admin_bar->add_node( array(
+				'id'    => 'xml-cache-sitemap',
+				'title' => 'XML Cache',
+				'href'  => home_url( '/cache.xml' ),
+				'meta'  => array(
+					'target' => '_blank',
+					'title'  => __( 'Open XML Sitemap', 'xml-cache' ),
+				),
+			) );
+		}, 100 );
 	}
 }

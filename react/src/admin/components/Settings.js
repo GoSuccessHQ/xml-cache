@@ -272,6 +272,19 @@ export default function Settings() {
                     />
                 </CardBody>
 
+                <CardDivider />
+
+                <CardBody>
+                    <ToggleControl
+                        __nextHasNoMarginBottom
+                        label={ __( 'Show admin bar link', 'xml-cache' ) }
+                        help={ __( 'Adds a quick link to the sitemap in the WordPress admin bar.', 'xml-cache' ) }
+                        checked={ options.admin_bar_enabled ?? true }
+                        onChange={ ( state ) => onChangeSetting( 'admin_bar_enabled', state ) }
+                        disabled={ options === false || sitemapUrl === false }
+                    />
+                </CardBody>
+
                 <CardFooter>
                     <p>
                         { createInterpolateElement(

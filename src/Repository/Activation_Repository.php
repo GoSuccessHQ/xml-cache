@@ -48,6 +48,7 @@ final class Activation_Repository {
 			'post_type_archives_enabled' => true,
 			'date_archives_enabled'      => true,
 			'homepage_enabled'           => true,
+			'admin_bar_enabled'          => true,
 		);
 	}
 }
