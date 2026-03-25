@@ -27,7 +27,7 @@ final class CLI_Command {
 	 * @subcommand status
 	 */
 	public function status(): void {
-		$cached    = get_transient( 'xml_cache_sitemap' );
+		$cached    = get_transient( XML_Sitemap_Repository::TRANSIENT_KEY );
 		$is_cached = false !== $cached && is_array( $cached );
 
 		if ( $is_cached ) {
@@ -55,7 +55,7 @@ final class CLI_Command {
 
 		$sitemap = new XML_Sitemap_Repository();
 		$sitemap->collect_urls();
-		set_transient( 'xml_cache_sitemap', $sitemap->sitemap_urls );
+		set_transient( XML_Sitemap_Repository::TRANSIENT_KEY, $sitemap->sitemap_urls );
 
 		WP_CLI::success(
 			sprintf( 'Sitemap regenerated with %s URLs.', number_format_i18n( count( $sitemap->sitemap_urls ) ) )

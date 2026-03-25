@@ -12,6 +12,7 @@ namespace GoSuccess\XML_Cache\Repository\API\V1\Admin\Endpoint\Cache;
 use GoSuccess\XML_Cache\Base\API_Endpoint_Base;
 use GoSuccess\XML_Cache\Model\API_Response;
 use GoSuccess\XML_Cache\Repository\API\V1\Admin\API_Repository;
+use GoSuccess\XML_Cache\Repository\XML_Sitemap_Repository;
 use WP_REST_Request;
 use WP_REST_Response;
 use WP_REST_Server;
@@ -48,7 +49,7 @@ final class Read extends API_Endpoint_Base {
 	public function callback( WP_REST_Request $request ): WP_REST_Response {
 		$api_response = new API_Response();
 
-		$cached    = get_transient( 'xml_cache_sitemap' );
+		$cached    = get_transient( XML_Sitemap_Repository::TRANSIENT_KEY );
 		$is_cached = false !== $cached && is_array( $cached );
 		$url_count = $is_cached ? count( $cached ) : 0;
 

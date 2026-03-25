@@ -22,7 +22,7 @@ final class XML_Sitemap_Repository {
 	/**
 	 * Transient key for cached sitemap data.
 	 */
-	private const TRANSIENT_KEY = 'xml_cache_sitemap';
+	public const TRANSIENT_KEY = 'xml_cache_sitemap';
 
 	/**
 	 * Whether the cache has already been invalidated during this request.
