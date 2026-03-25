@@ -10,6 +10,7 @@ declare( strict_types=1 );
 namespace GoSuccess\XML_Cache\Repository\API\V1\Admin\Endpoint\Cache;
 
 use GoSuccess\XML_Cache\Repository\API\V1\Admin\Endpoint\Cache\Delete;
+use GoSuccess\XML_Cache\Repository\API\V1\Admin\Endpoint\Cache\Read;
 
 /**
  * Registers cache-related REST API endpoints.
@@ -27,6 +28,7 @@ final class Cache_Repository {
 	 * Constructor to initialize the cache endpoint.
 	 */
 	public function __construct() {
+		new Read();
 		new Delete();
 	}
 }
