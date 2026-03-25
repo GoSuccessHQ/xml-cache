@@ -116,7 +116,8 @@ export default function Settings() {
         <div className="wrap">
 
             <Notices />
-            <Card className="xml-cache" style={ { maxWidth: '600px' } }>
+            <div className="xml-cache" style={ { maxWidth: '600px' } }>
+            <Card>
                 <CardHeader>
                     <h1>
                         { __( 'XML Cache Settings', 'xml-cache' ) }
@@ -262,6 +263,7 @@ export default function Settings() {
                     </p>
                 </CardFooter>
             </Card>
+            </div>
         </div>
     )
 }
