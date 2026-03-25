@@ -44,6 +44,8 @@ final class Plugin {
 	 * Initializes the plugin and registers services.
 	 */
 	public function __construct() {
+		$this->register_cache_invalidation_hooks();
+
 		$config = new Plugin_Configuration(
 			file: XML_CACHE_FILE,
 			slug: 'xml_cache',
@@ -85,5 +87,18 @@ final class Plugin {
 		}
 
 		return self::$instance;
+	}
+
+	/**
+	 * Register hooks that invalidate the sitemap transient cache on content changes.
+	 */
+	private function register_cache_invalidation_hooks(): void {
+		$invalidate = array( XML_Sitemap_Repository::class, 'invalidate_cache' );
+
+		add_action( 'save_post', $invalidate );
+		add_action( 'delete_post', $invalidate );
+		add_action( 'created_term', $invalidate );
+		add_action( 'edited_term', $invalidate );
+		add_action( 'delete_term', $invalidate );
 	}
 }

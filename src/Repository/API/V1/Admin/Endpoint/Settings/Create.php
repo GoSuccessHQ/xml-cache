@@ -111,6 +111,8 @@ final class Create extends API_Endpoint_Base {
 			);
 			update_option( 'xml_cache_settings', $options );
 
+			\GoSuccess\XML_Cache\Repository\XML_Sitemap_Repository::invalidate_cache();
+
 			$api_response->set_success( true );
 			$api_response->set_data( $options );
 		} catch ( Exception $e ) {

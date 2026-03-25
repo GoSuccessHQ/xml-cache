@@ -12,8 +12,8 @@ namespace GoSuccess\XML_Cache\Repository\API\V1\Admin\Endpoint\Settings;
 use Exception;
 use GoSuccess\XML_Cache\Base\API_Endpoint_Base;
 use GoSuccess\XML_Cache\Model\API_Response;
-use GoSuccess\XML_Cache\Repository\Activation_Repository;
 use GoSuccess\XML_Cache\Repository\API\V1\Admin\API_Repository;
+use GoSuccess\XML_Cache\Repository\XML_Sitemap_Repository;
 use WP_REST_Request;
 use WP_REST_Response;
 use WP_REST_Server;
@@ -53,21 +53,7 @@ final class Read extends API_Endpoint_Base {
 		$api_response = new API_Response();
 
 		try {
-			$options = get_option( 'xml_cache_settings', Activation_Repository::get_default_settings() );
-
-			// Backwards compatibility: unwrap nested array from v1.x.
-			if ( isset( $options[0] ) && is_array( $options[0] ) ) {
-				$options = $options[0];
-			}
-
-			// Migrate renamed key from v1.x.
-			if ( isset( $options['archives_enabled'] ) && ! isset( $options['date_archives_enabled'] ) ) {
-				$options['date_archives_enabled'] = $options['archives_enabled'];
-				unset( $options['archives_enabled'] );
-			}
-
-			// Fill missing keys with defaults for existing installations.
-			$options = array_merge( Activation_Repository::get_default_settings(), $options );
+			$options = XML_Sitemap_Repository::resolve_settings();
 
 			$api_response->set_success( true );
 			$api_response->set_data( $options );

@@ -13,10 +13,28 @@ namespace GoSuccess\XML_Cache\Repository;
  * Repository to assemble sitemap URLs and render XML.
  */
 final class XML_Sitemap_Repository {
+
 	/**
-	 * Collected sitemap URLs.
+	 * Maximum number of URLs per sitemap (Google Sitemaps protocol limit).
+	 */
+	private const MAX_URLS_PER_SITEMAP = 50000;
+
+	/**
+	 * Transient key for cached sitemap data.
+	 */
+	private const TRANSIENT_KEY = 'xml_cache_sitemap';
+
+	/**
+	 * Transient expiration in seconds (24 hours).
+	 */
+	private const TRANSIENT_EXPIRATION = DAY_IN_SECONDS;
+
+	/**
+	 * Collected sitemap URL entries.
 	 *
-	 * @var array<int,string>
+	 * Each entry is an array with keys 'loc' (string) and optionally 'lastmod' (string, W3C date).
+	 *
+	 * @var array<int,array{loc:string,lastmod?:string}>
 	 */
 	public array $sitemap_urls = array();
 
@@ -26,13 +44,18 @@ final class XML_Sitemap_Repository {
 	public function __construct() {}
 
 	/**
-	 * Collect URLs based on saved settings. Call this at runtime, not on bootstrap.
+	 * Resolve and normalize plugin settings from the database.
+	 *
+	 * Handles v1.x backwards compatibility (nested array unwrapping, key migration)
+	 * and fills any missing keys with defaults.
+	 *
+	 * @return array<string,bool> Normalized settings array.
 	 */
-	public function collect_urls(): void {
+	public static function resolve_settings(): array {
 		$option = get_option( 'xml_cache_settings', false );
 
 		if ( false === $option ) {
-			return;
+			return Activation_Repository::get_default_settings();
 		}
 
 		// Backwards compatibility: unwrap nested array from v1.x.
@@ -47,7 +70,14 @@ final class XML_Sitemap_Repository {
 		}
 
 		// Fill missing keys with defaults for existing installations.
-		$option = array_merge( Activation_Repository::get_default_settings(), $option );
+		return array_merge( Activation_Repository::get_default_settings(), $option );
+	}
+
+	/**
+	 * Collect URLs based on saved settings. Call this at runtime, not on bootstrap.
+	 */
+	public function collect_urls(): void {
+		$option = self::resolve_settings();
 
 		if ( ! empty( $option['posts_enabled'] ) ) {
 			$this->get_post_urls();
@@ -90,10 +120,9 @@ final class XML_Sitemap_Repository {
 	 * Collect post and page URLs.
 	 */
 	private function get_post_urls(): void {
-		$post_ids = get_posts(
+		$posts = get_posts(
 			array(
 				'numberposts' => -1,
-				'fields'      => 'ids',
 				'orderby'     => 'ID',
 				'post_status' => 'publish',
 				'post_type'   => array( 'post', 'page' ),
@@ -101,14 +130,14 @@ final class XML_Sitemap_Repository {
 			)
 		);
 
-		$this->get_urls( 'get_permalink', $post_ids );
+		$this->get_urls_from_posts( $posts );
 	}
 
 	/**
 	 * Collect URLs for all public, non-builtin custom post types (CPTs).
 	 *
 	 * This method intentionally excludes core types like 'post' and 'page'.
-	 * It reuses the general permalink + pagination logic in get_urls().
+	 * It reuses the general permalink + pagination logic in get_urls_from_posts().
 	 */
 	private function get_custom_post_type_urls(): void {
 		$post_types = get_post_types(
@@ -123,10 +152,9 @@ final class XML_Sitemap_Repository {
 			return;
 		}
 
-		$post_ids = get_posts(
+		$posts = get_posts(
 			array(
 				'numberposts' => -1,
-				'fields'      => 'ids',
 				'orderby'     => 'ID',
 				'post_status' => 'publish',
 				'post_type'   => $post_types,
@@ -134,37 +162,39 @@ final class XML_Sitemap_Repository {
 			)
 		);
 
-		$this->get_urls( 'get_permalink', $post_ids );
+		$this->get_urls_from_posts( $posts );
 	}
 
 	/**
 	 * Collect category URLs.
 	 */
 	private function get_category_urls(): void {
-		$category_ids = get_categories(
+		$categories = get_categories(
 			array(
-				'fields'  => 'ids',
 				'orderby' => 'id',
 				'lang'    => '',
 			)
 		);
 
-		$this->get_urls( 'get_category_link', $category_ids );
+		$this->get_urls_from_terms( $categories );
 	}
 
 	/**
 	 * Collect tag URLs.
 	 */
 	private function get_tag_urls(): void {
-		$tag_ids = get_tags(
+		$tags = get_tags(
 			array(
-				'fields'  => 'ids',
 				'orderby' => 'term_id',
 				'lang'    => '',
 			)
 		);
 
-		$this->get_urls( 'get_tag_link', $tag_ids );
+		if ( ! is_array( $tags ) ) {
+			return;
+		}
+
+		$this->get_urls_from_terms( $tags );
 	}
 
 	/**
@@ -174,10 +204,14 @@ final class XML_Sitemap_Repository {
 		global $wpdb;
 
 		$dates = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-			"SELECT DISTINCT YEAR(post_date) AS `year`, MONTH(post_date) AS `month`, DAY(post_date) AS `day`
-			FROM {$wpdb->posts}
-			WHERE post_type = 'post' AND post_status = 'publish'
-			ORDER BY post_date ASC"
+			$wpdb->prepare(
+				"SELECT DISTINCT YEAR(post_date) AS `year`, MONTH(post_date) AS `month`, DAY(post_date) AS `day`
+				FROM {$wpdb->posts}
+				WHERE post_type = %s AND post_status = %s
+				ORDER BY post_date ASC",
+				'post',
+				'publish'
+			)
 		);
 
 		if ( empty( $dates ) ) {
@@ -195,18 +229,18 @@ final class XML_Sitemap_Repository {
 			// Yearly archive (deduplicated).
 			if ( ! isset( $years[ $year ] ) ) {
 				$years[ $year ] = true;
-				$this->sitemap_urls[] = get_year_link( $year );
+				$this->sitemap_urls[] = array( 'loc' => get_year_link( $year ) );
 			}
 
 			// Monthly archive (deduplicated).
 			$month_key = $year . '-' . $month;
 			if ( ! isset( $months[ $month_key ] ) ) {
 				$months[ $month_key ] = true;
-				$this->sitemap_urls[] = get_month_link( $year, $month );
+				$this->sitemap_urls[] = array( 'loc' => get_month_link( $year, $month ) );
 			}
 
 			// Daily archive.
-			$this->sitemap_urls[] = get_day_link( $year, $month, $day );
+			$this->sitemap_urls[] = array( 'loc' => get_day_link( $year, $month, $day ) );
 		}
 	}
 
@@ -236,14 +270,14 @@ final class XML_Sitemap_Repository {
 				continue;
 			}
 
-			$this->sitemap_urls[] = $permalink;
+			$this->sitemap_urls[] = array( 'loc' => $permalink );
 
 			// Pagination for author archives.
 			$total_posts = (int) count_user_posts( $author_id, '', true );
 			$numpage     = (int) ceil( $total_posts / max( 1, $posts_per_page ) );
 
 			while ( $numpage > 1 ) {
-				$this->sitemap_urls[] = $this->build_paginated_url( $permalink, $permalinks_enabled, $numpage, 'archive' );
+				$this->sitemap_urls[] = array( 'loc' => $this->build_paginated_url( $permalink, $permalinks_enabled, $numpage, 'archive' ) );
 				--$numpage;
 			}
 		}
@@ -266,20 +300,19 @@ final class XML_Sitemap_Repository {
 		}
 
 		foreach ( $taxonomies as $taxonomy ) {
-			$term_ids = get_terms(
+			$terms = get_terms(
 				array(
 					'taxonomy'   => $taxonomy,
-					'fields'     => 'ids',
 					'hide_empty' => true,
 					'lang'       => '',
 				)
 			);
 
-			if ( empty( $term_ids ) || is_wp_error( $term_ids ) ) {
+			if ( empty( $terms ) || is_wp_error( $terms ) ) {
 				continue;
 			}
 
-			$this->get_urls( 'get_term_link', $term_ids );
+			$this->get_urls_from_terms( $terms );
 		}
 	}
 
@@ -309,105 +342,137 @@ final class XML_Sitemap_Repository {
 				continue;
 			}
 
-			$this->sitemap_urls[] = $permalink;
+			$this->sitemap_urls[] = array( 'loc' => $permalink );
 
 			// Pagination for post type archives.
 			$total_posts = (int) wp_count_posts( $post_type->name )->publish;
 			$numpage     = (int) ceil( $total_posts / max( 1, $posts_per_page ) );
 
 			while ( $numpage > 1 ) {
-				$this->sitemap_urls[] = $this->build_paginated_url( $permalink, $permalinks_enabled, $numpage, 'archive' );
+				$this->sitemap_urls[] = array( 'loc' => $this->build_paginated_url( $permalink, $permalinks_enabled, $numpage, 'archive' ) );
 				--$numpage;
 			}
 		}
 	}
 
 	/**
-	 * Collect the homepage URL when configured as "latest posts".
+	 * Collect the homepage URL and translated variants.
 	 */
 	private function get_homepage_url(): void {
-		$this->sitemap_urls[] = home_url( '/' );
+		$this->sitemap_urls[] = array( 'loc' => home_url( '/' ) );
 
 		// Include translated homepages when a multilingual plugin is active.
 		if ( function_exists( 'pll_languages_list' ) && function_exists( 'pll_home_url' ) ) {
+			$existing_locs = array_column( $this->sitemap_urls, 'loc' );
 			foreach ( pll_languages_list() as $lang ) {
 				$translated_home = pll_home_url( $lang );
-				if ( ! empty( $translated_home ) && ! in_array( $translated_home, $this->sitemap_urls, true ) ) {
-					$this->sitemap_urls[] = $translated_home;
+				if ( ! empty( $translated_home ) && ! in_array( $translated_home, $existing_locs, true ) ) {
+					$this->sitemap_urls[] = array( 'loc' => $translated_home );
+					$existing_locs[]      = $translated_home;
 				}
 			}
 		}
 	}
 
 	/**
-	 * Resolve URLs for given IDs using a permalink-like callable.
+	 * Resolve URLs from WP_Post objects with opt-out check, lastmod, and pagination.
 	 *
-	 * @param callable $permalink_callable Function to resolve a URL by ID.
-	 * @param array    $url_ids            IDs to resolve.
+	 * @param array $posts Array of WP_Post objects.
 	 */
-	private function get_urls( callable $permalink_callable, array $url_ids ): void {
-		if ( ! is_callable( $permalink_callable ) || empty( $url_ids ) ) {
+	private function get_urls_from_posts( array $posts ): void {
+		if ( empty( $posts ) ) {
 			return;
 		}
 
 		// Prime the metadata cache for all post IDs in a single query.
-		if ( 'get_permalink' === $permalink_callable ) {
-			update_meta_cache( 'post', $url_ids );
-		}
+		$post_ids = wp_list_pluck( $posts, 'ID' );
+		update_meta_cache( 'post', $post_ids );
 
-		$permalinks_structure = get_option( 'permalink_structure' );
-		$permalinks_enabled   = ! empty( $permalinks_structure );
+		$permalinks_enabled = ! empty( get_option( 'permalink_structure' ) );
 		$page_for_posts     = absint( get_option( 'page_for_posts' ) );
 		$posts_per_page     = absint( get_option( 'posts_per_page' ) );
 
-		$is_post_callable = 'get_permalink' === $permalink_callable;
+		foreach ( $posts as $post ) {
+			$id = (int) $post->ID;
 
-		foreach ( $url_ids as $id ) {
-			// Only check per-post opt-out for post permalinks, not for term links.
-			if ( $is_post_callable ) {
-				$is_post_cache_enabled = Meta_Box_Repository::is_post_cache_enabled( $id );
-
-				if ( ! $is_post_cache_enabled ) {
-					continue;
-				}
+			if ( ! Meta_Box_Repository::is_post_cache_enabled( $id ) ) {
+				continue;
 			}
 
-			$permalink = $permalink_callable( $id );
+			$permalink = get_permalink( $post );
 
 			if ( empty( $permalink ) || is_wp_error( $permalink ) ) {
 				continue;
 			}
 
-			$this->sitemap_urls[] = $permalink;
+			$lastmod = ! empty( $post->post_modified_gmt ) && '0000-00-00 00:00:00' !== $post->post_modified_gmt
+				? wp_date( 'c', strtotime( $post->post_modified_gmt ) )
+				: null;
+
+			$entry = array( 'loc' => $permalink );
+			if ( $lastmod ) {
+				$entry['lastmod'] = $lastmod;
+			}
+			$this->sitemap_urls[] = $entry;
 
 			$numpage = 1;
 			$context = 'archive';
 
-			if ( $is_post_callable ) { // Singular or posts page.
-				if ( $page_for_posts === $id ) {
-					// Posts page behaves like an archive for pagination.
-					$total_posts = (int) wp_count_posts( 'post' )->publish;
-					$numpage     = (int) ceil( $total_posts / max( 1, $posts_per_page ) );
-					$context     = 'archive';
-				} else {
-					// Multipage singular content.
-					$postdata = generate_postdata( $id );
-					if ( false !== $postdata && 1 === $postdata['multipage'] ) {
-						$numpage = (int) $postdata['numpages'];
-					}
-					$context = 'singular';
-				}
+			if ( $page_for_posts === $id ) {
+				// Posts page behaves like an archive for pagination.
+				$total_posts = (int) wp_count_posts( 'post' )->publish;
+				$numpage     = (int) ceil( $total_posts / max( 1, $posts_per_page ) );
+				$context     = 'archive';
 			} else {
-				// Category, tag, or custom taxonomy archives — use term count.
-				$term = get_term( $id );
-				if ( $term && ! is_wp_error( $term ) ) {
-					$numpage = (int) ceil( (int) $term->count / max( 1, $posts_per_page ) );
+				// Multipage singular content.
+				$postdata = generate_postdata( $id );
+				if ( false !== $postdata && 1 === $postdata['multipage'] ) {
+					$numpage = (int) $postdata['numpages'];
 				}
-				$context = 'archive';
+				$context = 'singular';
 			}
 
 			while ( $numpage > 1 ) {
-				$this->sitemap_urls[] = $this->build_paginated_url( (string) $permalink, (bool) $permalinks_enabled, (int) $numpage, (string) $context );
+				$paged_entry = array( 'loc' => $this->build_paginated_url( (string) $permalink, (bool) $permalinks_enabled, (int) $numpage, (string) $context ) );
+				if ( $lastmod ) {
+					$paged_entry['lastmod'] = $lastmod;
+				}
+				$this->sitemap_urls[] = $paged_entry;
+				--$numpage;
+			}
+		}
+	}
+
+	/**
+	 * Resolve URLs from WP_Term objects with pagination.
+	 *
+	 * @param array $terms Array of WP_Term objects.
+	 */
+	private function get_urls_from_terms( array $terms ): void {
+		if ( empty( $terms ) ) {
+			return;
+		}
+
+		$permalinks_enabled = ! empty( get_option( 'permalink_structure' ) );
+		$posts_per_page     = absint( get_option( 'posts_per_page' ) );
+
+		foreach ( $terms as $term ) {
+			if ( ! is_object( $term ) ) {
+				continue;
+			}
+
+			$permalink = get_term_link( $term );
+
+			if ( empty( $permalink ) || is_wp_error( $permalink ) ) {
+				continue;
+			}
+
+			$this->sitemap_urls[] = array( 'loc' => $permalink );
+
+			$numpage = (int) ceil( (int) $term->count / max( 1, $posts_per_page ) );
+
+			while ( $numpage > 1 ) {
+				$this->sitemap_urls[] = array( 'loc' => $this->build_paginated_url( (string) $permalink, (bool) $permalinks_enabled, (int) $numpage, 'archive' ) );
 				--$numpage;
 			}
 		}
@@ -440,15 +505,90 @@ final class XML_Sitemap_Repository {
 
 	/**
 	 * Render the XML sitemap and send appropriate headers.
+	 *
+	 * Uses transient caching. For sites with >50,000 URLs, renders a sitemap index
+	 * at /cache.xml with sub-sitemaps at /cache.xml?page=N.
 	 */
 	public static function render(): void {
-		$sitemap = new self();
-		$sitemap->collect_urls();
-		$sitemap_urls = $sitemap->sitemap_urls;
+		$page = isset( $_GET['page'] ) ? absint( $_GET['page'] ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 
-		$xml    = '';
-		$writer = null;
+		$cached = get_transient( self::TRANSIENT_KEY );
 
+		if ( false === $cached || ! is_array( $cached ) ) {
+			$sitemap = new self();
+			$sitemap->collect_urls();
+			$cached = $sitemap->sitemap_urls;
+			set_transient( self::TRANSIENT_KEY, $cached, self::TRANSIENT_EXPIRATION );
+		}
+
+		$total = count( $cached );
+		$pages = (int) ceil( $total / self::MAX_URLS_PER_SITEMAP );
+
+		if ( ! headers_sent() ) {
+			header( 'Content-Type: application/xml; charset=UTF-8' );
+			header( 'X-Robots-Tag: noindex, nofollow' );
+		}
+
+		// Large site: render sitemap index when no page param, or render specific page.
+		if ( $pages > 1 && 0 === $page ) {
+			echo self::build_sitemap_index( $pages ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			return;
+		}
+
+		// Single sitemap or specific page of a large sitemap.
+		$slice = $cached;
+		if ( $pages > 1 && $page > 0 ) {
+			$offset = ( $page - 1 ) * self::MAX_URLS_PER_SITEMAP;
+			$slice  = array_slice( $cached, $offset, self::MAX_URLS_PER_SITEMAP );
+		}
+
+		echo self::build_sitemap_xml( $slice ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+	}
+
+	/**
+	 * Build a sitemap index XML string pointing to sub-sitemaps.
+	 *
+	 * @param int $pages Number of sub-sitemap pages.
+	 * @return string XML string.
+	 */
+	private static function build_sitemap_index( int $pages ): string {
+		$base_url = home_url( '/cache.xml' );
+
+		if ( class_exists( '\\XMLWriter' ) ) {
+			$writer = new \XMLWriter();
+			$writer->openMemory();
+			$writer->startDocument( '1.0', 'UTF-8' );
+			$writer->startElement( 'sitemapindex' );
+			$writer->writeAttribute( 'xmlns', 'http://www.sitemaps.org/schemas/sitemap/0.9' );
+
+			for ( $i = 1; $i <= $pages; $i++ ) {
+				$writer->startElement( 'sitemap' );
+				$writer->writeElement( 'loc', \esc_url_raw( add_query_arg( 'page', $i, $base_url ) ) );
+				$writer->endElement();
+			}
+
+			$writer->endElement();
+			return $writer->outputMemory();
+		}
+
+		$xml  = '<?xml version="1.0" encoding="UTF-8"?>';
+		$xml .= '<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">';
+		for ( $i = 1; $i <= $pages; $i++ ) {
+			$loc  = \esc_url_raw( add_query_arg( 'page', $i, $base_url ) );
+			$xml .= '<sitemap><loc>' . htmlspecialchars( $loc, ENT_QUOTES | ENT_XML1, 'UTF-8' ) . '</loc></sitemap>';
+		}
+		$xml .= '</sitemapindex>';
+
+		return $xml;
+	}
+
+	/**
+	 * Build a sitemap XML string from URL entries.
+	 *
+	 * @param array<int,array{loc:string,lastmod?:string}> $entries URL entries.
+	 * @return string XML string.
+	 */
+	private static function build_sitemap_xml( array $entries ): string {
 		if ( class_exists( '\\XMLWriter' ) ) {
 			$writer = new \XMLWriter();
 			$writer->openMemory();
@@ -456,51 +596,60 @@ final class XML_Sitemap_Repository {
 			$writer->startElement( 'urlset' );
 			$writer->writeAttribute( 'xmlns', 'http://www.sitemaps.org/schemas/sitemap/0.9' );
 
-			if ( ! empty( $sitemap_urls ) ) {
-				foreach ( $sitemap_urls as $url ) {
-					if ( ! is_string( $url ) || '' === $url ) {
-						continue;
-					}
-
-					$loc = \esc_url_raw( $url );
-					if ( '' === $loc ) {
-						continue;
-					}
-
-					$writer->startElement( 'url' );
-					$writer->writeElement( 'loc', $loc );
-					$writer->endElement(); // url.
+			foreach ( $entries as $entry ) {
+				$loc = is_array( $entry ) ? ( $entry['loc'] ?? '' ) : (string) $entry;
+				if ( '' === $loc ) {
+					continue;
 				}
+
+				$loc = \esc_url_raw( $loc );
+				if ( '' === $loc ) {
+					continue;
+				}
+
+				$writer->startElement( 'url' );
+				$writer->writeElement( 'loc', $loc );
+
+				if ( is_array( $entry ) && ! empty( $entry['lastmod'] ) ) {
+					$writer->writeElement( 'lastmod', $entry['lastmod'] );
+				}
+
+				$writer->endElement();
 			}
 
-			$writer->endElement(); // urlset.
-			$xml = $writer->outputMemory();
-		} else {
-			// Fallback if ext-xmlwriter is not available.
-			$xml  = '<?xml version="1.0" encoding="UTF-8"?>';
-			$xml .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">';
+			$writer->endElement();
+			return $writer->outputMemory();
+		}
 
-			if ( ! empty( $sitemap_urls ) ) {
-				foreach ( $sitemap_urls as $url ) {
-					if ( ! is_string( $url ) || '' === $url ) {
-						continue;
-					}
-					$loc = \esc_url_raw( $url );
-					if ( '' === $loc ) {
-						continue;
-					}
-					$xml .= '<url><loc>' . htmlspecialchars( $loc, ENT_QUOTES | ENT_XML1, 'UTF-8' ) . '</loc></url>';
-				}
+		// Fallback if ext-xmlwriter is not available.
+		$xml  = '<?xml version="1.0" encoding="UTF-8"?>';
+		$xml .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">';
+
+		foreach ( $entries as $entry ) {
+			$loc = is_array( $entry ) ? ( $entry['loc'] ?? '' ) : (string) $entry;
+			if ( '' === $loc ) {
+				continue;
+			}
+			$loc = \esc_url_raw( $loc );
+			if ( '' === $loc ) {
+				continue;
 			}
 
-			$xml .= '</urlset>';
+			$xml .= '<url><loc>' . htmlspecialchars( $loc, ENT_QUOTES | ENT_XML1, 'UTF-8' ) . '</loc>';
+			if ( is_array( $entry ) && ! empty( $entry['lastmod'] ) ) {
+				$xml .= '<lastmod>' . htmlspecialchars( $entry['lastmod'], ENT_QUOTES | ENT_XML1, 'UTF-8' ) . '</lastmod>';
+			}
+			$xml .= '</url>';
 		}
 
-		if ( ! headers_sent() ) {
-			header( 'Content-Type: application/xml; charset=UTF-8' );
-			header( 'X-Robots-Tag: noindex, nofollow' );
-		}
+		$xml .= '</urlset>';
+		return $xml;
+	}
 
-		echo $xml; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- XML is constructed safely above.
+	/**
+	 * Invalidate the cached sitemap. Should be called on content changes.
+	 */
+	public static function invalidate_cache(): void {
+		delete_transient( self::TRANSIENT_KEY );
 	}
 }

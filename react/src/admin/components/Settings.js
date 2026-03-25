@@ -1,8 +1,8 @@
 import apiFetch from '@wordpress/api-fetch';
 import { Spinner, Notice, Button, Card, CardHeader, CardBody, CardDivider, CardFooter, ToggleControl } from '@wordpress/components';
-import { __, sprintf } from '@wordpress/i18n';
+import { __ } from '@wordpress/i18n';
 import { useCopyToClipboard } from '@wordpress/compose';
-import { useState, useEffect } from '@wordpress/element';
+import { useState, useEffect, createInterpolateElement } from '@wordpress/element';
 import { dispatch } from '@wordpress/data';
 import Notices from './Notices';
 
@@ -235,14 +235,16 @@ export default function Settings() {
                 </CardBody>
 
                 <CardFooter>
-                    <p dangerouslySetInnerHTML={{
-                        __html: sprintf(
-                            __( 'Got questions, issues, or feature ideas? <a href="%s" target="_blank" rel="noopener">Visit the support forum</a>. Enjoying the plugin? <a href="%s" target="_blank" rel="noopener">Please leave a review</a> — it really helps. Developers are welcome to contribute on <a href="%s" target="_blank" rel="noopener">GitHub</a>.', 'xml-cache' ),
-                            xmlCache.supportUrl,
-                            xmlCache.reviewUrl,
-                            xmlCache.githubUrl
-                        )
-                    }} />
+                    <p>
+                        { createInterpolateElement(
+                            __( 'Got questions, issues, or feature ideas? <supportLink>Visit the support forum</supportLink>. Enjoying the plugin? <reviewLink>Please leave a review</reviewLink> — it really helps. Developers are welcome to contribute on <githubLink>GitHub</githubLink>.', 'xml-cache' ),
+                            {
+                                supportLink: <a href={ xmlCache.supportUrl } target="_blank" rel="noopener noreferrer" />,
+                                reviewLink: <a href={ xmlCache.reviewUrl } target="_blank" rel="noopener noreferrer" />,
+                                githubLink: <a href={ xmlCache.githubUrl } target="_blank" rel="noopener noreferrer" />,
+                            }
+                        ) }
+                    </p>
                 </CardFooter>
             </Card>
         </div>

@@ -21,11 +21,11 @@ use GoSuccess\XML_Cache\Configuration\Plugin_Configuration;
 final class Menu_Repository {
 
 	/**
-	 * Static variable to hold the hook suffix for the menu.
+	 * Hook suffix returned by add_submenu_page.
 	 *
 	 * @var string
 	 */
-	public static string $hook_suffix = '';
+	public string $hook_suffix = '';
 
 	/**
 	 * Constructor to initialize the menu repository.
@@ -49,14 +49,14 @@ final class Menu_Repository {
 			'manage_options',
 			$this->plugin_configuration->get_slug(),
 			function (): void {
-				if ( self::is_displayed() ) {
+				if ( $this->is_displayed() ) {
 					echo '<xml-cache></xml-cache>';
 				}
 			}
 		);
 
 		if ( false !== $hook_suffix ) {
-			self::$hook_suffix = $hook_suffix;
+			$this->hook_suffix = $hook_suffix;
 		}
 	}
 
@@ -105,10 +105,10 @@ final class Menu_Repository {
 	 *
 	 * @return bool True if the menu is displayed, false otherwise.
 	 */
-	public static function is_displayed(): bool {
+	public function is_displayed(): bool {
 		return str_contains(
 			( get_current_screen() )->id,
-			self::$hook_suffix
+			$this->hook_suffix
 		);
 	}
 }

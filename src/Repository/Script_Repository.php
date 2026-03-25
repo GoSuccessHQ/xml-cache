@@ -32,7 +32,7 @@ final class Script_Repository {
 	 * @param string $hook_suffix Current admin page hook.
 	 */
 	public function admin_scripts( string $hook_suffix ): void {
-		if ( $hook_suffix !== $this->menu_repository::$hook_suffix ) {
+		if ( $hook_suffix !== $this->menu_repository->hook_suffix ) {
 			return;
 		}
 
