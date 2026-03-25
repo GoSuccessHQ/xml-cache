@@ -97,6 +97,7 @@ final class XML_Sitemap_Repository {
 				'orderby'     => 'ID',
 				'post_status' => 'publish',
 				'post_type'   => array( 'post', 'page' ),
+				'lang'        => '',
 			)
 		);
 
@@ -129,6 +130,7 @@ final class XML_Sitemap_Repository {
 				'orderby'     => 'ID',
 				'post_status' => 'publish',
 				'post_type'   => $post_types,
+				'lang'        => '',
 			)
 		);
 
@@ -143,6 +145,7 @@ final class XML_Sitemap_Repository {
 			array(
 				'fields'  => 'ids',
 				'orderby' => 'id',
+				'lang'    => '',
 			)
 		);
 
@@ -157,6 +160,7 @@ final class XML_Sitemap_Repository {
 			array(
 				'fields'  => 'ids',
 				'orderby' => 'term_id',
+				'lang'    => '',
 			)
 		);
 
@@ -267,6 +271,7 @@ final class XML_Sitemap_Repository {
 					'taxonomy'   => $taxonomy,
 					'fields'     => 'ids',
 					'hide_empty' => true,
+					'lang'       => '',
 				)
 			);
 
@@ -322,6 +327,16 @@ final class XML_Sitemap_Repository {
 	 */
 	private function get_homepage_url(): void {
 		$this->sitemap_urls[] = home_url( '/' );
+
+		// Include translated homepages when a multilingual plugin is active.
+		if ( function_exists( 'pll_languages_list' ) && function_exists( 'pll_home_url' ) ) {
+			foreach ( pll_languages_list() as $lang ) {
+				$translated_home = pll_home_url( $lang );
+				if ( ! empty( $translated_home ) && ! in_array( $translated_home, $this->sitemap_urls, true ) ) {
+					$this->sitemap_urls[] = $translated_home;
+				}
+			}
+		}
 	}
 
 	/**
