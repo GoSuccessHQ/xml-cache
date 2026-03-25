@@ -75,10 +75,10 @@ export default function Settings() {
             if ( result.success ) {
                 dispatch( 'core/notices' ).createNotice(
                     'success',
-                    __( 'Sitemap cache cleared.', 'xml-cache' ),
+                    __( 'Sitemap cache regenerated.', 'xml-cache' ),
                     { type: 'snackbar', isDismissible: true }
                 );
-                setCacheStats( { url_count: 0, is_cached: false } );
+                setCacheStats( result.data );
             }
         } ).catch( ( error ) => {
             console.error( error );

@@ -53,12 +53,10 @@ final class CLI_Command {
 	public function regenerate(): void {
 		XML_Sitemap_Repository::invalidate_cache();
 
-		$sitemap = new XML_Sitemap_Repository();
-		$sitemap->collect_urls();
-		set_transient( XML_Sitemap_Repository::TRANSIENT_KEY, $sitemap->sitemap_urls );
+		$cached = get_transient( XML_Sitemap_Repository::TRANSIENT_KEY );
 
 		WP_CLI::success(
-			sprintf( 'Sitemap regenerated with %s URLs.', number_format_i18n( count( $sitemap->sitemap_urls ) ) )
+			sprintf( 'Sitemap regenerated with %s URLs.', number_format_i18n( is_array( $cached ) ? count( $cached ) : 0 ) )
 		);
 	}
 
@@ -73,6 +71,11 @@ final class CLI_Command {
 	 */
 	public function flush(): void {
 		XML_Sitemap_Repository::invalidate_cache();
-		WP_CLI::success( 'Sitemap cache flushed.' );
+
+		$cached = get_transient( XML_Sitemap_Repository::TRANSIENT_KEY );
+
+		WP_CLI::success(
+			sprintf( 'Sitemap cache flushed and regenerated with %s URLs.', number_format_i18n( is_array( $cached ) ? count( $cached ) : 0 ) )
+		);
 	}
 }

@@ -212,7 +212,7 @@ final class Plugin {
 				if(d){d.addEventListener('click',function(e){
 					e.preventDefault();
 					fetch(<?php echo wp_json_encode( $bar_data['rest_url'] ); ?>,{method:'DELETE',credentials:'same-origin',headers:{'X-WP-Nonce':<?php echo wp_json_encode( $bar_data['nonce'] ); ?>}}).then(function(r){return r.json()}).then(function(data){
-						if(data.success){updateLabel(d,<?php echo wp_json_encode( __( 'Cleared!', 'xml-cache' ) ); ?>);updateCount(0)}
+						if(data.success){updateLabel(d,<?php echo wp_json_encode( __( 'Regenerated!', 'xml-cache' ) ); ?>);updateCount(data.data.url_count)}
 					});
 				})}
 				if(g){g.addEventListener('click',function(e){

@@ -51,15 +51,13 @@ final class Create extends API_Endpoint_Base {
 
 		XML_Sitemap_Repository::invalidate_cache();
 
-		$sitemap = new XML_Sitemap_Repository();
-		$sitemap->collect_urls();
-		set_transient( XML_Sitemap_Repository::TRANSIENT_KEY, $sitemap->sitemap_urls );
+		$cached = get_transient( XML_Sitemap_Repository::TRANSIENT_KEY );
 
 		$api_response->set_success( true );
 		$api_response->set_data(
 			array(
-				'url_count' => count( $sitemap->sitemap_urls ),
-				'is_cached' => true,
+				'url_count' => is_array( $cached ) ? count( $cached ) : 0,
+				'is_cached' => false !== $cached && is_array( $cached ),
 			)
 		);
 

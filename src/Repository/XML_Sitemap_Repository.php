@@ -740,9 +740,9 @@ final class XML_Sitemap_Repository {
 	}
 
 	/**
-	 * Invalidate the cached sitemap. Should be called on content changes.
+	 * Invalidate and immediately regenerate the cached sitemap.
 	 *
-	 * Throttled to run only once per request to avoid redundant deletes
+	 * Throttled to run only once per request to avoid redundant rebuilds
 	 * during bulk operations.
 	 */
 	public static function invalidate_cache(): void {
@@ -751,6 +751,11 @@ final class XML_Sitemap_Repository {
 		}
 
 		delete_transient( self::TRANSIENT_KEY );
+
+		$sitemap = new self();
+		$sitemap->collect_urls();
+		set_transient( self::TRANSIENT_KEY, $sitemap->sitemap_urls );
+
 		self::$cache_invalidated = true;
 	}
 }

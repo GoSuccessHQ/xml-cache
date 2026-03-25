@@ -51,7 +51,15 @@ final class Delete extends API_Endpoint_Base {
 
 		XML_Sitemap_Repository::invalidate_cache();
 
+		$cached = get_transient( XML_Sitemap_Repository::TRANSIENT_KEY );
+
 		$api_response->set_success( true );
+		$api_response->set_data(
+			array(
+				'url_count' => is_array( $cached ) ? count( $cached ) : 0,
+				'is_cached' => false !== $cached && is_array( $cached ),
+			)
+		);
 
 		return rest_ensure_response( $api_response->to_array() );
 	}
