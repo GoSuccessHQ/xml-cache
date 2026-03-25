@@ -4,7 +4,7 @@ Contributors: gosuccess
 Tags: xml, cache, sitemap, litespeed cache, pagespeed
 Requires at least: 6.4
 Tested up to: 7.0
-Stable tag: 2.1.0
+Stable tag: 2.1.1
 Requires PHP: 8.2
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
@@ -57,6 +57,10 @@ To install with the zip file downloaded from this page:
 7. Done.
 
 == Changelog ==
+
+= 2.1.1 =
+* Fixed TypeError in block editor when a custom post type does not support custom-fields.
+* Added FAQ entry for custom post type custom-fields requirement.
 
 = 2.1.0 =
 * Multilingual support for Polylang, WPML, and TranslatePress.

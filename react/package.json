@@ -1,6 +1,6 @@
 {
   "name": "xml-cache",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "Generates an XML sitemap for cache plugins.",
   "license": "GPL-3.0-or-later",
   "author": "GoSuccess",
