@@ -191,7 +191,7 @@ export default function Settings() {
 
                 <CardBody className="xml-cache__buttons">
                     <Button
-                        variant="primary"
+                        variant="secondary"
                         href={ sitemapUrl }
                         icon="admin-links"
                         size="compact"
@@ -223,7 +223,7 @@ export default function Settings() {
                     </Button>
 
                     <Button
-                        variant="tertiary"
+                        variant="secondary"
                         icon="update"
                         size="compact"
                         onClick={ invalidateCache }
