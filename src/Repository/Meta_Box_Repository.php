@@ -42,17 +42,23 @@ final class Meta_Box_Repository {
 	}
 
 	/**
-	 * Register the classic meta box for posts/pages.
+	 * Register the classic meta box for posts, pages, and public custom post types.
 	 */
 	public function add_classic_meta_box(): void {
+		$post_types = get_post_types(
+			array(
+				'public' => true,
+			),
+			'names'
+		);
+
+		unset( $post_types['attachment'] );
+
 		add_meta_box(
 			'xml-cache',
 			__( 'XML Cache', 'xml-cache' ),
 			array( $this, 'render_classic_meta_box' ),
-			array(
-				'post',
-				'page',
-			),
+			array_values( $post_types ),
 			'side',
 			'default',
 			array(
