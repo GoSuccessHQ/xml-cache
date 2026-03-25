@@ -4,6 +4,19 @@
 	container-type: inline-size;
 }
 
+.xml-cache__notices {
+	position: fixed;
+	right: 16px;
+	bottom: 16px;
+	z-index: 100000;
+}
+
+.xml-cache__notices .components-snackbar-list {
+	position: static;
+	bottom: auto;
+	left: auto;
+}
+
 .xml-cache__stats {
 	display: inline-block;
 	font-size: 13px;

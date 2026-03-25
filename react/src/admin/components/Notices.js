@@ -14,11 +14,7 @@ export default function Notices() {
     const { removeNotice } = useDispatch( noticesStore );
     
     return (
-        <div
-            style={{
-                position: 'relative',
-            }}
-        >
+        <div className="xml-cache__notices">
             <SnackbarList
                 notices={ notices }
                 onRemove={ removeNotice }
