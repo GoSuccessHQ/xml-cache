@@ -26,6 +26,7 @@ use GoSuccess\XML_Cache\Repository\Menu_Repository;
 use GoSuccess\XML_Cache\Repository\Meta_Box_Repository;
 use GoSuccess\XML_Cache\Repository\Rewrite_Rules_Repository;
 use GoSuccess\XML_Cache\Repository\Script_Repository;
+use GoSuccess\XML_Cache\Repository\Site_Health_Repository;
 use GoSuccess\XML_Cache\Repository\Uninstall_Repository;
 use GoSuccess\XML_Cache\Repository\XML_Sitemap_Repository;
 
@@ -48,6 +49,7 @@ final class Plugin {
 		$this->register_cache_invalidation_hooks();
 		$this->register_cli_commands();
 		$this->register_admin_bar();
+		$this->register_site_health();
 
 		$config = new Plugin_Configuration(
 			file: XML_CACHE_FILE,
@@ -141,5 +143,14 @@ final class Plugin {
 				),
 			) );
 		}, 100 );
+	}
+
+	/**
+	 * Register Site Health debug information section.
+	 */
+	private function register_site_health(): void {
+		$site_health = new Site_Health_Repository();
+
+		add_filter( 'debug_information', array( $site_health, 'add_debug_information' ) );
 	}
 }
