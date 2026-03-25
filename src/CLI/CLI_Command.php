@@ -40,28 +40,7 @@ final class CLI_Command {
 	}
 
 	/**
-	 * Regenerate the sitemap cache.
-	 *
-	 * Invalidates the current cache and rebuilds it immediately.
-	 *
-	 * ## EXAMPLES
-	 *
-	 *     wp xml-cache regenerate
-	 *
-	 * @subcommand regenerate
-	 */
-	public function regenerate(): void {
-		XML_Sitemap_Repository::invalidate_cache();
-
-		$cached = get_transient( XML_Sitemap_Repository::TRANSIENT_KEY );
-
-		WP_CLI::success(
-			sprintf( 'Sitemap regenerated with %s URLs.', number_format_i18n( is_array( $cached ) ? count( $cached ) : 0 ) )
-		);
-	}
-
-	/**
-	 * Clear the sitemap cache.
+	 * Flush and regenerate the sitemap cache.
 	 *
 	 * ## EXAMPLES
 	 *
