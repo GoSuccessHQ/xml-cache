@@ -119,10 +119,12 @@ final class Plugin {
 	}
 
 	/**
-	 * Register admin bar node linking to the sitemap when enabled.
+	 * Register admin bar node with flame icon, URL count, and actions submenu.
 	 */
 	private function register_admin_bar(): void {
-		add_action( 'admin_bar_menu', static function ( \WP_Admin_Bar $admin_bar ): void {
+		$bar_data = null;
+
+		add_action( 'admin_bar_menu', static function ( \WP_Admin_Bar $admin_bar ) use ( &$bar_data ): void {
 			if ( ! current_user_can( 'manage_options' ) ) {
 				return;
 			}
@@ -133,16 +135,86 @@ final class Plugin {
 				return;
 			}
 
+			$cached    = get_transient( XML_Sitemap_Repository::TRANSIENT_KEY );
+			$is_cached = false !== $cached && is_array( $cached );
+			$url_count = $is_cached ? count( $cached ) : 0;
+
+			$icon  = '<img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjY0IDI2IDM4NCAzODQiPjxwYXRoIGQ9Ik0zMjQuNjQgNzguMDQ0YzYyLjI0OCAyNy44MTcgMTAyLjUxNiA4OS45MTYgMTAyLjUxNiAxNTguMDk3IDAgOTQuOTU5LTc4LjEwOCAxNzMuMTExLTE3My4wNjYgMTczLjE2NWgtLjAxM2MtOTQuOTcyIDAtMTczLjEyMi03OC4xNTEtMTczLjEyMi0xNzMuMTIzIDAtNDQuNTcyIDE3LjIxMy04Ny40NjcgNDguMDI1LTExOS42NzQgMTYuMTQ1IDIyLjU2NyAzNy40NTkgNDAuOTQ1IDYyLjE1NiA1My41OTQuODc1LTU2LjEwNiAyNi43NTktMTA4Ljk4OSA3MC41MjktMTQ0LjEgMTYuNTA5IDIyLjE0MSAzOC4xMDIgMzkuOTkyIDYyLjk1NCA1Mi4wNDF6IiBmaWxsPSIjZjQzODAwIi8+PHBhdGggZD0iTTMwNC4yNjIgMTcwLjI1YzQ0LjI3OCAxOS43ODYgNzIuOTIxIDYzLjk1OCA3Mi45MjEgMTEyLjQ1NiAwIDY3LjU0NC01NS41NTkgMTIzLjEzNC0xMjMuMTAzIDEyMy4xNzJoLS4wMDljLTY3LjU1NCAwLTEyMy4xNDMtNTUuNTg5LTEyMy4xNDMtMTIzLjE0MyAwLTMxLjcwNCAxMi4yNDQtNjIuMjE1IDM0LjE2MS04NS4xMjUgMTEuNDg0IDE2LjA1MiAyNi42NDUgMjkuMTI1IDQ0LjIxMiAzOC4xMjIuNjIyLTM5LjkwOCAxOS4wMzMtNzcuNTI0IDUwLjE2Ny0xMDIuNDk5IDExLjc0MyAxNS43NDkgMjcuMTAyIDI4LjQ0NiA0NC43NzkgMzcuMDE3eiIgZmlsbD0iI2ZmNjQxMCIvPjxwYXRoIGQ9Ik0yNTMuOTcxIDQwMC43MzhoLjE2OWM0OS42MzIgMCA5MC40NzItNDAuODQxIDkwLjQ3Mi05MC40NzIgMC00NS4xOTYtMzMuODY4LTgzLjgwOC03OC42NzktODkuNy0yNC45MDcgMjIuMjg5LTQxLjMyNyA1Mi41NDQtNDYuNDQyIDg1LjU3NC0xOC41ODYtNC41NTQtMzYuMDgtMTIuNzY0LTUxLjQ2LTI0LjE0OS0zLjAwMiA5LjEyNC00LjUzMiAxOC42NjktNC41MzIgMjguMjc1IDAgNDkuNjMxIDQwLjg0IDkwLjQ3MiA5MC40NzIgOTAuNDcyeiIgZmlsbD0iI2ZmYjg1NSIvPjwvc3ZnPg==" style="height:20px;width:20px;vertical-align:middle;padding:6px 4px 6px 0" alt="">';
+			$label = sprintf(
+				/* translators: %s: number of URLs */
+				__( '%s URLs', 'xml-cache' ),
+				number_format_i18n( $url_count )
+			);
+
+			$sitemap_url = home_url( XML_Sitemap_Repository::SITEMAP_PATH );
+
 			$admin_bar->add_node( array(
-				'id'    => 'xml-cache-sitemap',
-				'title' => 'XML Cache',
-				'href'  => home_url( '/cache.xml' ),
-				'meta'  => array(
-					'target' => '_blank',
-					'title'  => __( 'Open XML Sitemap', 'xml-cache' ),
-				),
+				'id'    => 'xml-cache',
+				'title' => $icon . '<span class="ab-label">' . esc_html( $label ) . '</span>',
+				'href'  => admin_url( 'tools.php?page=xml_cache' ),
+				'meta'  => array( 'title' => __( 'XML Cache Settings', 'xml-cache' ) ),
 			) );
+
+			$admin_bar->add_node( array(
+				'parent' => 'xml-cache',
+				'id'     => 'xml-cache-open',
+				'title'  => __( 'Open Sitemap', 'xml-cache' ),
+				'href'   => $sitemap_url,
+				'meta'   => array( 'target' => '_blank' ),
+			) );
+
+			$admin_bar->add_node( array(
+				'parent' => 'xml-cache',
+				'id'     => 'xml-cache-copy',
+				'title'  => __( 'Copy Sitemap URL', 'xml-cache' ),
+				'href'   => '#xml-cache-copy',
+			) );
+
+			$admin_bar->add_node( array(
+				'parent' => 'xml-cache',
+				'id'     => 'xml-cache-clear',
+				'title'  => __( 'Clear Cache', 'xml-cache' ),
+				'href'   => '#xml-cache-clear',
+			) );
+
+			$bar_data = array(
+				'sitemap_url' => $sitemap_url,
+				'rest_url'    => rest_url( API_Repository::$namespace . '/cache' ),
+				'nonce'       => wp_create_nonce( 'wp_rest' ),
+			);
 		}, 100 );
+
+		$print_script = static function () use ( &$bar_data ): void {
+			if ( null === $bar_data ) {
+				return;
+			}
+			?>
+			<script>
+			(function(){
+				var c=document.getElementById('wp-admin-bar-xml-cache-copy');
+				var d=document.getElementById('wp-admin-bar-xml-cache-clear');
+				if(c){c.addEventListener('click',function(e){
+					e.preventDefault();
+					navigator.clipboard.writeText(<?php echo wp_json_encode( $bar_data['sitemap_url'] ); ?>).then(function(){
+						var a=c.querySelector('a');if(a){var o=a.textContent;a.textContent=<?php echo wp_json_encode( __( 'Copied!', 'xml-cache' ) ); ?>;setTimeout(function(){a.textContent=o},2000)}
+					});
+				})}
+				if(d){d.addEventListener('click',function(e){
+					e.preventDefault();
+					fetch(<?php echo wp_json_encode( $bar_data['rest_url'] ); ?>,{method:'DELETE',credentials:'same-origin',headers:{'X-WP-Nonce':<?php echo wp_json_encode( $bar_data['nonce'] ); ?>}}).then(function(r){return r.json()}).then(function(data){
+						if(data.success){
+							var a=d.querySelector('a');if(a){var o=a.textContent;a.textContent=<?php echo wp_json_encode( __( 'Cleared!', 'xml-cache' ) ); ?>;setTimeout(function(){a.textContent=o},2000)}
+							var l=document.querySelector('#wp-admin-bar-xml-cache .ab-label');if(l){l.textContent=<?php echo wp_json_encode( sprintf( __( '%s URLs', 'xml-cache' ), '0' ) ); ?>}
+						}
+					});
+				})}
+			})();
+			</script>
+			<?php
+		};
+
+		add_action( 'admin_footer', $print_script );
+		add_action( 'wp_footer', $print_script );
 	}
 
 	/**

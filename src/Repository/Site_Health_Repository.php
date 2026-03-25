@@ -29,7 +29,7 @@ final class Site_Health_Repository {
 		$fields = array(
 			'sitemap_url' => array(
 				'label' => __( 'Sitemap URL', 'xml-cache' ),
-				'value' => home_url( '/cache.xml' ),
+				'value' => home_url( XML_Sitemap_Repository::SITEMAP_PATH ),
 			),
 			'cache_status' => array(
 				'label' => __( 'Cache status', 'xml-cache' ),

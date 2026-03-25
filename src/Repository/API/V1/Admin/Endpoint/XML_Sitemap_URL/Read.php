@@ -13,6 +13,7 @@ use Exception;
 use GoSuccess\XML_Cache\Base\API_Endpoint_Base;
 use GoSuccess\XML_Cache\Model\API_Response;
 use GoSuccess\XML_Cache\Repository\API\V1\Admin\API_Repository;
+use GoSuccess\XML_Cache\Repository\XML_Sitemap_Repository;
 use WP_REST_Request;
 use WP_REST_Response;
 use WP_REST_Server;
@@ -55,7 +56,7 @@ final class Read extends API_Endpoint_Base {
 			$home_url     = home_url( '/' );
 			$pretty_links = (bool) get_option( 'permalink_structure' );
 			$sitemap_url  = $pretty_links
-				? (string) $home_url . 'cache.xml'
+				? (string) $home_url . ltrim( XML_Sitemap_Repository::SITEMAP_PATH, '/' )
 				: add_query_arg( 'xml_cache', 'true', $home_url );
 
 			$api_response->set_success( true );

@@ -34,7 +34,7 @@ export default function Settings() {
         }
     );
 
-    const saveOptions = ( nextOptions = options ) => {
+    const saveOptions = ( nextOptions = options, onSuccess = null ) => {
         apiFetch( {
             path: xmlCache.restApiNamespace + '/settings',
             method: 'POST',
@@ -49,6 +49,9 @@ export default function Settings() {
                         isDismissible: true,
                     }
                 );
+                if ( onSuccess ) {
+                    onSuccess();
+                }
             } else {
                 dispatch( 'core/notices' ).createNotice(
                     'error',
@@ -152,10 +155,10 @@ export default function Settings() {
                 <CardBody>
                     <p>{ __( 'XML Cache generates an XML sitemap for cache plugins. Select which sections you want to include in the sitemap. URLs that are set to noindex are also included in the sitemap. You can specify the sitemap in your cache plugin\'s settings to automatically warm up your entire cache.', 'xml-cache' ) }</p>
                     { cacheStats && (
-                        <p className="xml-cache__stats">
+                        <p className={ 'xml-cache__stats' + ( cacheStats.is_cached ? ' xml-cache__stats--active' : ' xml-cache__stats--empty' ) }>
                             { cacheStats.is_cached
-                                ? sprintf( __( '%s URLs in sitemap (cached)', 'xml-cache' ), cacheStats.url_count.toLocaleString() )
-                                : __( 'Sitemap cache is empty. It will be generated on the next request.', 'xml-cache' )
+                                ? sprintf( __( '%s URLs in sitemap', 'xml-cache' ), cacheStats.url_count.toLocaleString() )
+                                : __( 'Sitemap is empty. It will be generated on the next request.', 'xml-cache' )
                             }
                         </p>
                     ) }
@@ -280,7 +283,12 @@ export default function Settings() {
                         label={ __( 'Show admin bar link', 'xml-cache' ) }
                         help={ __( 'Adds a quick link to the sitemap in the WordPress admin bar.', 'xml-cache' ) }
                         checked={ options.admin_bar_enabled ?? true }
-                        onChange={ ( state ) => onChangeSetting( 'admin_bar_enabled', state ) }
+                        onChange={ ( state ) => {
+                            if ( ! options || options === false ) { return; }
+                            const nextOptions = { ...options, admin_bar_enabled: state };
+                            setOptions( nextOptions );
+                            saveOptions( nextOptions, () => window.location.reload() );
+                        } }
                         disabled={ options === false || sitemapUrl === false }
                     />
                 </CardBody>

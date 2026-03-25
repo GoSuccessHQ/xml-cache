@@ -25,6 +25,11 @@ final class XML_Sitemap_Repository {
 	public const TRANSIENT_KEY = 'xml_cache_sitemap';
 
 	/**
+	 * Sitemap URL path relative to the site root.
+	 */
+	public const SITEMAP_PATH = '/cache.xml';
+
+	/**
 	 * Whether the cache has already been invalidated during this request.
 	 *
 	 * @var bool
@@ -571,7 +576,7 @@ final class XML_Sitemap_Repository {
 	 * @return string XML string.
 	 */
 	private static function build_sitemap_index( int $pages ): string {
-		$base_url = home_url( '/cache.xml' );
+		$base_url = home_url( self::SITEMAP_PATH );
 
 		if ( class_exists( '\\XMLWriter' ) ) {
 			$writer = new \XMLWriter();
