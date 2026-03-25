@@ -121,6 +121,8 @@ final class XML_Sitemap_Repository {
 		if ( ! empty( $option['homepage_enabled'] ) ) {
 			$this->get_homepage_url();
 		}
+
+		$this->add_translatepress_variants();
 	}
 
 	/**
@@ -363,6 +365,54 @@ final class XML_Sitemap_Repository {
 	}
 
 	/**
+	 * Add translated URL variants for all collected URLs when TranslatePress is active.
+	 *
+	 * TranslatePress stores translations in-place (one post per content, not one per language),
+	 * so URL variants must be generated via its URL converter for each published language.
+	 * Homepage variants are already handled in get_homepage_url(), so they are skipped here.
+	 */
+	private function add_translatepress_variants(): void {
+		if ( ! class_exists( 'TRP_Translate_Press' ) ) {
+			return;
+		}
+
+		$trp           = \TRP_Translate_Press::get_trp_instance();
+		$trp_settings  = $trp->get_component( 'settings' )->get_settings();
+		$url_converter = $trp->get_component( 'url_converter' );
+
+		$other_languages = array_filter(
+			$trp_settings['publish-languages'],
+			static fn( string $lang ): bool => $lang !== $trp_settings['default-language'],
+		);
+
+		if ( empty( $other_languages ) ) {
+			return;
+		}
+
+		$existing_locs = array_flip( array_column( $this->sitemap_urls, 'loc' ) );
+		$new_entries   = array();
+
+		foreach ( $this->sitemap_urls as $entry ) {
+			$loc = $entry['loc'];
+
+			foreach ( $other_languages as $lang ) {
+				$translated = $url_converter->get_url_for_language( $lang, $loc, '' );
+
+				if ( ! empty( $translated ) && ! isset( $existing_locs[ $translated ] ) ) {
+					$new_entry = array( 'loc' => $translated );
+					if ( ! empty( $entry['lastmod'] ) ) {
+						$new_entry['lastmod'] = $entry['lastmod'];
+					}
+					$new_entries[]                  = $new_entry;
+					$existing_locs[ $translated ] = true;
+				}
+			}
+		}
+
+		array_push( $this->sitemap_urls, ...$new_entries );
+	}
+
+	/**
 	 * Collect the homepage URL and translated variants.
 	 */
 	private function get_homepage_url(): void {
@@ -394,6 +444,25 @@ final class XML_Sitemap_Repository {
 					}
 				}
 				do_action( 'wpml_switch_language', null );
+			}
+		}
+
+		// TranslatePress: include translated homepages.
+		if ( class_exists( 'TRP_Translate_Press' ) ) {
+			$trp          = \TRP_Translate_Press::get_trp_instance();
+			$trp_settings = $trp->get_component( 'settings' )->get_settings();
+			$url_converter = $trp->get_component( 'url_converter' );
+			$home          = home_url( '/' );
+
+			foreach ( $trp_settings['publish-languages'] as $lang ) {
+				if ( $lang === $trp_settings['default-language'] ) {
+					continue;
+				}
+				$translated_home = $url_converter->get_url_for_language( $lang, $home, '' );
+				if ( ! empty( $translated_home ) && ! in_array( $translated_home, $existing_locs, true ) ) {
+					$this->sitemap_urls[] = array( 'loc' => $translated_home );
+					$existing_locs[]      = $translated_home;
+				}
 			}
 		}
 	}
