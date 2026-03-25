@@ -9,6 +9,7 @@ declare( strict_types=1 );
 
 namespace GoSuccess\XML_Cache;
 
+use GoSuccess\XML_Cache\CLI\CLI_Command;
 use GoSuccess\XML_Cache\Configuration\Plugin_Configuration;
 use GoSuccess\XML_Cache\Controller\Activation_Controller;
 use GoSuccess\XML_Cache\Controller\API_Controller;
@@ -45,6 +46,7 @@ final class Plugin {
 	 */
 	public function __construct() {
 		$this->register_cache_invalidation_hooks();
+		$this->register_cli_commands();
 
 		$config = new Plugin_Configuration(
 			file: XML_CACHE_FILE,
@@ -102,5 +104,14 @@ final class Plugin {
 		add_action( 'delete_term', $invalidate );
 		add_action( 'activated_plugin', $invalidate );
 		add_action( 'deactivated_plugin', $invalidate );
+	}
+
+	/**
+	 * Register WP-CLI commands when running in CLI context.
+	 */
+	private function register_cli_commands(): void {
+		if ( defined( 'WP_CLI' ) && WP_CLI ) {
+			\WP_CLI::add_command( 'xml-cache', CLI_Command::class );
+		}
 	}
 }
