@@ -9,6 +9,8 @@ declare( strict_types=1 );
 
 namespace GoSuccess\XML_Cache\Repository\API\V1\Admin\Endpoint\Cache;
 
+use GoSuccess\XML_Cache\Repository\API\V1\Admin\Endpoint\Cache\Delete;
+
 /**
  * Registers cache-related REST API endpoints.
  */
