@@ -52,6 +52,23 @@ export default function Settings() {
         } );
     }
 
+    const invalidateCache = () => {
+        apiFetch( {
+            path: xmlCache.restApiNamespace + '/cache',
+            method: 'DELETE',
+        } ).then( ( result ) => {
+            if ( result.success ) {
+                dispatch( 'core/notices' ).createNotice(
+                    'success',
+                    __( 'Sitemap cache cleared.', 'xml-cache' ),
+                    { type: 'snackbar', isDismissible: true }
+                );
+            }
+        } ).catch( ( error ) => {
+            console.error( error );
+        } );
+    }
+
     const onChangeSetting = ( option, value ) => {
         if ( ! options || options === false ) { return; }
         const nextOptions = { ...options, [ option ]: value };
@@ -125,7 +142,7 @@ export default function Settings() {
                 <CardBody
                     style={ {
                         display: 'grid',
-                        gridTemplateColumns: '1fr 1fr',
+                        gridTemplateColumns: '1fr 1fr 1fr',
                         gap: '1rem'
                     } }
                 >
@@ -148,6 +165,16 @@ export default function Settings() {
                         disabled={ options === false || sitemapUrl === false }
                     >
                         { __( 'Copy Sitemap URL', 'xml-cache' ) }
+                    </Button>
+
+                    <Button
+                        variant="tertiary"
+                        icon="update"
+                        size="compact"
+                        onClick={ invalidateCache }
+                        disabled={ options === false || sitemapUrl === false }
+                    >
+                        { __( 'Clear Cache', 'xml-cache' ) }
                     </Button>
                 </CardBody>
                 

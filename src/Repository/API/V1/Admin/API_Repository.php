@@ -9,6 +9,7 @@ declare( strict_types=1 );
 
 namespace GoSuccess\XML_Cache\Repository\API\V1\Admin;
 
+use GoSuccess\XML_Cache\Repository\API\V1\Admin\Endpoint\Cache\Cache_Repository;
 use GoSuccess\XML_Cache\Repository\API\V1\Admin\Endpoint\Settings\Settings_Repository;
 use GoSuccess\XML_Cache\Repository\API\V1\Admin\Endpoint\XML_Sitemap_URL\XML_Sitemap_URL_Repository;
 
@@ -35,6 +36,7 @@ final class API_Repository {
 	 * Register admin endpoints.
 	 */
 	public function register_endpoints(): void {
+		new Cache_Repository();
 		new Settings_Repository();
 		new XML_Sitemap_URL_Repository();
 	}
