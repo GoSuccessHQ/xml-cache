@@ -4,7 +4,7 @@ Contributors: gosuccess
 Tags: xml, cache, sitemap, litespeed cache, pagespeed
 Requires at least: 6.4
 Tested up to: 7.0
-Stable tag: 2.1.1
+Stable tag: 2.1.2
 Requires PHP: 8.2
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
@@ -57,6 +57,9 @@ To install with the zip file downloaded from this page:
 7. Done.
 
 == Changelog ==
+
+= 2.1.2 =
+* Wrapped admin bar icon in ab-icon span to fix display issues.
 
 = 2.1.1 =
 * Fixed TypeError in block editor when a custom post type does not support custom-fields.
