@@ -155,7 +155,7 @@ final class Plugin {
 				$admin_bar->add_node(
 					array(
 						'id'    => 'xml-cache',
-						'title' => $icon . '<span class="ab-label">' . esc_html( $label ) . '</span>',
+						'title' => '<span class="ab-icon">' . $icon . '</span><span class="ab-label">' . esc_html( $label ) . '</span>',
 						'href'  => admin_url( 'tools.php?page=xml_cache' ),
 						'meta'  => array( 'title' => __( 'XML Cache Settings', 'xml-cache' ) ),
 					)
