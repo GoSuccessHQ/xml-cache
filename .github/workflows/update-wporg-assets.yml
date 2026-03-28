@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - '.wordpress-org/**'
+      - 'readme.txt'
   workflow_dispatch:
 
 jobs:
@@ -15,8 +16,19 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Skip if Stable tag changed
+        if: github.event_name == 'push'
+        id: check
+        run: |
+          if git diff HEAD~1 -- readme.txt | grep -q '^[+-]Stable tag:'; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: WordPress.org Plugin Asset Update
+        if: steps.check.outputs.skip != 'true'
         uses: 10up/action-wordpress-plugin-asset-update@stable
         env:
           SVN_USERNAME: ${{ secrets.WPORG_USERNAME }}
